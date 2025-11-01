@@ -21,26 +21,22 @@
     .user-avatar img { width:50px; height:50px; border-radius:50%; border:2px solid var(--gold); }
     .stats { display:flex; gap:10px; font-weight:bold; }
     .stats div { background:linear-gradient(45deg, var(--gold), var(--accent)); padding:8px 12px; border-radius:15px; font-size:14px; color:#000; }
-
     .boinkers { position:relative; margin:20px 0; }
     .tent-img { width:200px; height:auto; filter: drop-shadow(0 5px 10px rgba(255,215,61,0.3)); animation: bounce 3s infinite; }
     @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
     .leaderboard { position:absolute; top:10px; left:50%; transform:translateX(-50%); background:#000; color:var(--gold); padding:10px 20px; border-radius:25px; font-weight:bold; font-size:18px; box-shadow:0 3px 10px rgba(0,0,0,0.5); }
-
     .slot-machine { background:var(--dark); border:5px solid var(--blue); border-radius:25px; padding:20px; margin:15px 0; box-shadow:0 10px 20px rgba(0,0,0,0.4); }
     .reels { display:flex; justify-content:center; gap:15px; margin:15px 0; }
-    .reel { width:80px; height:80px; background:#16213e; border-radius:20px; display:flex; align-items:center; justify-content:center; font-size:50px; transition: transform 0.4s; box-shadow:inset 0 2px 5px rgba(0,0,0,0.5); }
+    .reel { width:80px; height:80px; background:#16213e; border-radius:20px; display:flex; align-items:center; justify-content:center; transition: transform 0.4s; box-shadow:inset 0 2px 5px rgba(0,0,0,0.5); }
+    .reel img { width:60px; height:60px; }
     .reel.spin { animation: spin 0.6s ease-in-out; }
     @keyframes spin { 0% { transform: rotateY(0deg) scale(1); } 100% { transform: rotateY(360deg) scale(1.1); } }
-
     .progress { height:25px; background:var(--dark); border-radius:15px; overflow:hidden; margin:15px 0; box-shadow:inset 0 2px 5px rgba(0,0,0,0.5); }
     .fill { height:100%; width:68%; background:linear-gradient(90deg, var(--blue), var(--gold)); transition: width 0.5s ease; border-radius:15px; }
-
     .events { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:15px 0; font-size:12px; }
     .event { background:var(--dark); padding:10px; border-radius:20px; box-shadow:0 5px 10px rgba(0,0,0,0.3); }
     .event img { width:40px; height:40px; margin-bottom:5px; filter: drop-shadow(0 2px 5px rgba(255,255,255,0.2)); }
     .event-name { font-weight:bold; margin-bottom:5px; }
-
     .spin-btn { 
       background:linear-gradient(45deg, var(--gold), var(--accent)); 
       color:#000; font-weight:bold; font-size:18px; 
@@ -57,35 +53,29 @@
 </head>
 <body>
   <div class="container">
-
-    <!-- HEADER -->
     <div class="header">
       <div class="user">
-        <div class="user-avatar"><img src="https://www.cleanpng.com/png-sonic-the-hedgehog-halloween-blue-hedgehog-pumpkin-7061285/download-png.html" alt="Toni" /></div>
+        <div class="user-avatar"><img src="https://www.cleanpng.com/png-sonic-the-hedgehog-character-sonic-hedgehog-sonic-7061285/download-png.html" alt="Toni" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjUiIGZpbGw9IiM0ZWNkYzQiLz4KPHRleHQgeD0iMjUiIHk9IjMwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkNvbWljIFNhbnMgTVMiIGZvbnQtc2l6ZT0iMTIiPlRvbmlcPC90ZXh0Pgo8L3N2Zz4K'; this.alt='Toni Hedgecoin';"/></div>
         <div>
           <div>Toni the Hedgecoin</div>
           <small>Уровень 63</small>
         </div>
       </div>
       <div class="stats">
-        <div id="ton">36.66M</div>
-        <div id="cash">376</div>
-        <div id="energy">50/50</div>
+        <div id="ton">🪙 36.66M</div>
+        <div id="cash">💰 376</div>
+        <div id="energy">⚡ 50/50</div>
       </div>
     </div>
-
-    <!-- BOINKERS TENT -->
     <div class="boinkers">
-      <img src="https://www.cleanpng.com/png-circus-tent-colorful-circus-tent-illustration-7012345/download-png.html" alt="Tent" class="tent-img" />
+      <img src="https://www.cleanpng.com/png-circus-tent-circus-7012345/download-png.html" alt="Tent" class="tent-img" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDIwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjZmY2YjZiIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMwMDAiIGZvbnQtZmFtaWx5PSJDb21pYyBTYW5zIE1TIiBmb250LXNpemU9IjE0Ij5Cb2lua2VycyBUZW50PC90ZXh0Pgo8L3N2Zz4K';"/>
       <div class="leaderboard">Erlna 5.3M</div>
     </div>
-
-    <!-- SLOT MACHINE -->
     <div class="slot-machine">
       <div class="reels">
-        <div class="reel" id="reel1"><img src="https://www.flaticon.com/svg/static/icons/svg/3203/3203734.svg" alt="Lightning" style="width:60px;height:60px;" /></div>
-        <div class="reel" id="reel2"><img src="https://www.flaticon.com/svg/static/icons/svg/3203/3203729.svg" alt="Money" style="width:60px;height:60px;" /></div>
-        <div class="reel" id="reel3"><img src="https://www.flaticon.com/svg/static/icons/svg/3203/3203732.svg" alt="Diamond" style="width:60px;height:60px;" /></div>
+        <div class="reel" id="reel1"><img src="https://www.flaticon.com/svg/static/icons/svg/860/860821.svg" alt="⚡" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIzMCIgZmlsbD0iIzRmY2RjNCIvPjx0ZXh0IHg9IjMwIiB5PSIzNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJDb21pYyBTYW5zIE1TIiBmb250LXNpemU9IjEyIj7wn4EgPC90ZXh0Pjwvc3ZnPg==';"/></div>
+        <div class="reel" id="reel2"><img src="https://www.flaticon.com/svg/static/icons/svg/860/860815.svg" alt="💰" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIzMCIgZmlsbD0iI2ZmZDkzZCIvPjx0ZXh0IHg9IjMwIiB5PSIzNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzAwMCIgZm9udC1mYW1pbHk9IkNvbWljIFNhbnMgTVMiIGZvbnQtc2l6ZT0iMTIiPuKAkzAwPC90ZXh0Pjwvc3ZnPg==';"/></div>
+        <div class="reel" id="reel3"><img src="https://www.flaticon.com/svg/static/icons/svg/860/860809.svg" alt="💎" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIzMCIgZmlsbD0iIzRmY2RjNCIvPjx0ZXh0IHg9IjMwIiB5PSIzNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJDb21pYyBTYW5zIE1TIiBmb250LXNpemU9IjEyIj7CsMOsPC90ZXh0Pjwvc3ZnPg==';"/></div>
       </div>
       <div class="progress"><div class="fill" id="progress-fill"></div></div>
       <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--gold);">
@@ -93,76 +83,65 @@
         <span id="free-pass">68/100</span>
       </div>
     </div>
-
-    <!-- EVENTS -->
     <div class="events">
       <div class="event">
-        <img src="https://www.cleanpng.com/png-halloween-ghost-halloween-decoration-spooky-halloween-7012346/download-png.html" alt="Ghost" />
+        <img src="https://www.cleanpng.com/png-halloween-ghost-cartoon-ghost-7012346/download-png.html" alt="👻" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iI2ZmNmI2YiIvPjx0ZXh0IHg9IjIwIiB5PSIyNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzAwMCIgZm9udC1mYW1pbHk9IkNvbWljIFNhbnMgTVMiIGZvbnQtc2l6ZT0iMTIiPuKkvyA8L3RleHQ+PC9zdmc+';"/>
         <div class="event-name">SCARECROWS</div>
         <small id="scarecrow-timer">02:00:16</small>
       </div>
       <div class="event">
-        <img src="https://www.cleanpng.com/png-halloween-mummy-halloween-costume-halloween-party-7012347/download-png.html" alt="Mummy" />
+        <img src="https://www.cleanpng.com/png-halloween-mummy-cartoon-mummy-7012347/download-png.html" alt="🧟" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iI2ZmNmI2YiIvPjx0ZXh0IHg9IjIwIiB5PSIyNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzAwMCIgZm9udC1mYW1pbHk9IkNvbWljIFNhbnMgTVMiIGZvbnQtc2l6ZT0iMTIiPuKUsTwvdGV4dD48L3N2Zz4K';"/>
         <div class="event-name">MUMMY</div>
         <small id="mummy-timer">05:23:16</small>
       </div>
       <div class="event">
-        <img src="https://www.cleanpng.com/png-haunted-house-halloween-costume-haunted-house-7012348/download-png.html" alt="Castle" />
+        <img src="https://www.cleanpng.com/png-haunted-castle-cartoon-castle-7012348/download-png.html" alt="🏰" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iI2ZmNmI2YiIvPjx0ZXh0IHg9IjIwIiB5PSIyNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzAwMCIgZm9udC1mYW1pbHk9IkNvbWljIFNhbnMgTVMiIGZvbnQtc2l6ZT0iMTIiPuKItTwvdGV4dD48L3N2Zz4K';"/>
         <div class="event-name">HAUNTED</div>
         <small id="haunted-timer">01:36:16</small>
       </div>
       <div class="event">
-        <img src="https://www.cleanpng.com/png-halloween-candy-halloween-candy-transparent-png-7012349/download-png.html" alt="Candy" />
+        <img src="https://www.cleanpng.com/png-halloween-candy-cartoon-candy-7012349/download-png.html" alt="🍬" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iI2ZmZDkzZCIvPjx0ZXh0IHg9IjIwIiB5PSIyNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzAwMCIgZm9udC1mYW1pbHk9IkNvbWljIFNhbnMgTVMiIGZvbnQtc2l6ZT0iMTIiPuKdkTwvdGV4dD48L3N2Zz4K';"/>
         <div class="event-name">CANDY BAG</div>
         <small id="candy-timer">02:00:16</small>
       </div>
       <div class="event">
-        <img src="https://www.vecteezy.com/png/12345678-star-icon.png" alt="Star" /> <!-- Замени на реальную из поиска, если нужно -->
+        <img src="https://www.vecteezy.com/png/2866778-star-icon-cartoon-star.png" alt="⭐" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iI2ZmZDkzZCIvPjx0ZXh0IHg9IjIwIiB5PSIyNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzAwMCIgZm9udC1mYW1pbHk9IkNvbWljIFNhbnMgTVMiIGZvbnQtc2l6ZT0iMTIiPuKdkTwvdGV4dD48L3N2Zz4K';"/>
         <div class="event-name">STAR</div>
         <small id="star-timer">12:00:16</small>
       </div>
       <div class="event">
-        <img src="https://www.cleanpng.com/png-halloween-pumpkin-halloween-costume-halloween-party-7012350/download-png.html" alt="Pumpkin" />
+        <img src="https://www.cleanpng.com/png-halloween-pumpkin-cartoon-pumpkin-7012350/download-png.html" alt="🎃" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iI2ZmNjViNiIvPjx0ZXh0IHg9IjIwIiB5PSIyNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzAwMCIgZm9udC1mYW1pbHk9IkNvbWljIFNhbnMgTVMiIGZvbnQtc2l6ZT0iMTIiPuKdkjwvdGV4dD48L3N2Zz4K';"/>
         <div class="event-name">LET'S</div>
         <small id="lets-timer">12:29:43</small>
       </div>
     </div>
-
-    <!-- SPIN BUTTONS -->
     <button class="spin-btn" onclick="spinSingle()">КРУТИТЬ ОДИНОЧКУ</button>
     <button class="spin-btn" style="background:linear-gradient(45deg, var(--accent), var(--gold));" onclick="startAutoSpin()">КРУТИТЬ ВСЁ</button>
     <div id="result"></div>
-
-    <!-- BOTTOM NAV -->
     <div class="bottom-nav">
-      <div class="nav-item"><img src="https://www.cleanpng.com/png-moon-halloween-moon-transparent-png-7012351/download-png.html" alt="Moon" />Moon</div>
-      <div class="nav-item"><img src="https://www.vecteezy.com/png/12345679-stickers.png" alt="Stickers" />Stickers</div>
-      <div class="nav-item"><img src="https://www.freepik.com/free-icon/wheel_12345680.png" alt="Wheel" />Wheel</div>
-      <div class="nav-item"><img src="https://www.flaticon.com/svg/static/icons/svg/3203/3203731.svg" alt="Earn" />Заработать</div>
+      <div class="nav-item"><img src="https://www.cleanpng.com/png-moon-cartoon-moon-7012351/download-png.html" alt="🌕" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAzNSAzNSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNy41IiBjeT0iMTcuNSIgcj0iMTcuNSIgZmlsbD0iI2ZmZDkzZCIvPjx0ZXh0IHg9IjE3LjUiIHk9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMDAwIiBmb250LWZhbWlseT0iQ29taWMgU2FucyBNUyIgZm9udC1zaXplPSIxMCI+TW9vbjwvdGV4dD48L3N2Zz4K';"/>Moon</div>
+      <div class="nav-item"><img src="https://www.vecteezy.com/png/2866780-stickers-pack-cartoon.png" alt="🪪" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAzNSAzNSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNy41IiBjeT0iMTcuNSIgcj0iMTcuNSIgZmlsbD0iI2ZmNmI2YiIvPjx0ZXh0IHg9IjE3LjUiIHk9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMDAwIiBmb250LWZhbWlseT0iQ29taWMgU2FucyBNUyIgZm9udC1zaXplPSIxMCI+U3RpY2tlcnM8L3RleHQ+PC9zdmc+';"/>Stickers</div>
+      <div class="nav-item"><img src="https://www.freepik.com/free-icon/wheel-cartoon-wheel.png" alt="🎡" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAzNSAzNSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNy41IiBjeT0iMTcuNSIgcj0iMTcuNSIgZmlsbD0iIzRmY2RjNCIvPjx0ZXh0IHg9IjE3LjUiIHk9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMDAwIiBmb250LWZhbWlseT0iQ29taWMgU2FucyBNUyIgZm9udC1zaXplPSIxMCI+V2hlZWw8L3RleHQ+PC9zdmc+';"/>Wheel</div>
+      <div class="nav-item"><img src="https://www.flaticon.com/svg/static/icons/svg/860/860815.svg" alt="💵" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAzNSAzNSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNy41IiBjeT0iMTcuNSIgcj0iMTcuNSIgZmlsbD0iI2ZmZDkzZCIvPjx0ZXh0IHg9IjE3LjUiIHk9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMDAwIiBmb250LWZhbWlseT0iQ29taWMgU2FucyBNUyIgZm9udC1zaXplPSIxMCI+0YPQu9C40Y48L3RleHQ+PC9zdmc+';"/>Заработать</div>
     </div>
   </div>
-
   <script>
-    // Telegram init
     if (typeof Telegram !== 'undefined') {
       Telegram.WebApp.ready();
       Telegram.WebApp.expand();
     }
-
     const symbols = [
-      'https://www.flaticon.com/svg/static/icons/svg/3203/3203734.svg', // Lightning
-      'https://www.flaticon.com/svg/static/icons/svg/3203/3203729.svg', // Money
-      'https://www.flaticon.com/svg/static/icons/svg/3203/3203732.svg'  // Diamond
+      'https://www.flaticon.com/svg/static/icons/svg/860/860821.svg', // ⚡
+      'https://www.flaticon.com/svg/static/icons/svg/860/860815.svg', // 💰
+      'https://www.flaticon.com/svg/static/icons/svg/860/860809.svg'  // 💎
     ];
     let autoInterval = null;
-
     function spinSingle() {
       if (getEnergy() < 1) { showResult('Нет энергии! ⚡'); return; }
       spinReels();
       updateEnergy(-1);
       setTimeout(checkWin, 700);
     }
-
     function startAutoSpin() {
       if (autoInterval) { clearInterval(autoInterval); autoInterval = null; showResult('Авто остановлено'); return; }
       autoInterval = setInterval(() => {
@@ -173,7 +152,6 @@
       }, 1200);
       showResult('Авто запущено! 🚀');
     }
-
     function spinReels() {
       const reels = ['reel1', 'reel2', 'reel3'];
       reels.forEach((id, i) => {
@@ -186,43 +164,36 @@
         }, (i + 1) * 250);
       });
     }
-
     function checkWin() {
       const imgs = document.querySelectorAll('.reel img');
       const srcs = Array.from(imgs).map(img => img.src);
       if (srcs[0] === srcs[1] && srcs[1] === srcs[2]) {
-        let bonus = srcs[0].includes('diamond') ? 100 : srcs[0].includes('money') ? 10 : 5;
+        let bonus = srcs[0].includes('860809') ? 100 : srcs[0].includes('860815') ? 10 : 5;
         updateTon(bonus);
         showResult(`Джекпот! +${bonus} TON 💎✨`);
       } else {
         showResult('Почти... Попробуй снова! 🎰');
       }
     }
-
     function updateTon(delta) {
-      let current = parseFloat(document.getElementById('ton').textContent.match(/(\d+\.?\d*)/)[0]);
-      document.getElementById('ton').textContent = (current + delta).toFixed(2) + 'M';
+      let current = parseFloat(document.getElementById('ton').textContent.match(/([0-9]+\.?[0-9]*)/)[0]);
+      document.getElementById('ton').textContent = `🪙 ${(current + delta).toFixed(2)}M`;
     }
-
     function getEnergy() {
       return parseInt(document.getElementById('energy').textContent.split('/')[0]);
     }
-
     function updateEnergy(delta) {
       let [current, max] = document.getElementById('energy').textContent.split('/').map(Number);
       current = Math.max(0, Math.min(max, current + delta));
-      document.getElementById('energy').textContent = `${current}/${max}`;
+      document.getElementById('energy').textContent = `⚡ ${current}/${max}`;
       if (current < max) setTimeout(() => updateEnergy(1), 5000);
     }
-
     function showResult(msg) {
       const el = document.getElementById('result');
       el.textContent = msg;
-      el.style.color = msg.includes('Джекпот') ? var(--gold) : var(--accent);
+      el.style.color = msg.includes('Джекпот') ? 'var(--gold)' : 'var(--accent)';
       setTimeout(() => el.textContent = '', 4000);
     }
-
-    // Таймеры (как на скрине)
     const timers = {
       'scarecrow-timer': {h:2,m:0,s:16}, 'mummy-timer': {h:5,m:23,s:16},
       'haunted-timer': {h:1,m:36,s:16}, 'candy-timer': {h:2,m:0,s:16},
@@ -237,8 +208,6 @@
       });
     }
     setInterval(updateTimers, 1000);
-
-    // Прогресс
     setInterval(() => {
       let w = parseInt(document.getElementById('progress-fill').style.width) || 68;
       w = (w + 1) % 100;
