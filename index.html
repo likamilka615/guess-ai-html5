@@ -1,114 +1,257 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Крипто-Космос</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Выживальщик</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#000 url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=512') center/cover;color:#0f0;text-align:center;padding:20px;min-height:100vh}
-    h1{margin:15px 0;font-size:1.8em;color:#0ff;text-shadow:0 0 10px #0ff}
-    #planet{width:200px;height:200px;margin:20px auto;border-radius:50%;overflow:hidden;box-shadow:0 0 30px #0f0;background:#111}
-    #planet img{width:100%;height:100%;object-fit:cover}
-    #resources,#shield{font-size:1.4em;margin:10px 0;color:#0f0}
-    #clickBtn{font-size:3em;background:#0f0;color:#000;border:none;border-radius:50%;width:100px;height:100px;cursor:pointer;margin:15px}
-    #puzzle{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;width:150px;margin:20px auto}
-    .tile{width:48px;height:48px;background:#333;color:#0f0;font-size:1.2em;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #0f0}
-    .tile.empty{background:#111;border-color:#555}
-    #leaderboard{margin:20px 0;color:#ff0;font-size:0.9em}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #0f0; text-align: center; padding: 10px; min-height: 100vh; }
+    h1 { font-size: 1.5em; margin: 10px 0; text-shadow: 0 0 5px #0f0; }
+    #stats { display: flex; justify-content: space-around; margin: 10px 0; font-size: 0.9em; }
+    .bar { width: 60px; height: 8px; background: #333; margin-top: 3px; }
+    .fill { height: 100%; background: #0f0; transition: width 0.3s; }
+    #map { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; width: 300px; margin: 15px auto; }
+    .cell { width: 48px; height: 48px; background: #222; border: 1px solid #0f0; font-size: 1.5em; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .cell.selected { border: 2px solid #ff0; box-shadow: 0 0 10px #ff0; }
+    .cell.visited { background: #003300; }
+    #character { position: absolute; font-size: 1.8em; transition: all 0.3s; pointer-events: none; }
+    #log { height: 80px; overflow-y: auto; background: #111; padding: 8px; margin: 10px 0; font-size: 0.8em; text-align: left; border: 1px solid #0f0; }
+    #actions button { margin: 5px; padding: 10px; background: #003300; color: #0f0; border: 1px solid #0f0; cursor: pointer; }
+    #actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #leaderboard { margin-top: 15px; font-size: 0.8em; color: #ff0; }
   </style>
 </head>
 <body>
-  <h1>КРИПТО-КОСМОС</h1>
-  <div id="planetNum">Планета #1</div>
-  <div id="planet"><img id="planetImg" src="" alt="Планета"></div>
-  <div id="resources">TON: 0</div>
-  <div id="shield">Защита: 0%</div>
-  <button id="clickBtn">⚡</button>
-  <div id="puzzle"></div>
-  <div id="leaderboard">Лидер: @user — 999 TON</div>
+  <h1>ВЫЖИВАЛЬЩИК</h1>
+  <div id="stats">
+    <div>День: <span id="day">1</span></div>
+    <div>Здоровье: <div class="bar"><div id="health" class="fill" style="width:100%"></div></div></div>
+    <div>Голод: <div class="bar"><div id="hunger" class="fill" style="width:0%"></div></div></div>
+    <div>Усталость: <div class="bar"><div id="fatigue" class="fill" style="width:0%"></div></div></div>
+  </div>
+
+  <div style="position:relative; width:300px; height:300px; margin:0 auto;">
+    <div id="map"></div>
+    <div id="character">Person</div>
+  </div>
+
+  <div id="log">Игра началась. Выберите клетку на карте.</div>
+  <div id="actions">
+    <button id="rest">Отдыхать</button>
+    <button id="eat">Съесть еду</button>
+    <button id="explore">Исследовать</button>
+  </div>
+  <div id="leaderboard">Лидер: @user — 15 дней</div>
 
   <script>
-    let ton = 0, shield = 0, planetId = 1;
-    const planetImg = document.getElementById('planetImg');
-    const resources = document.getElementById('resources');
-    const shieldEl = document.getElementById('shield');
-    const planetNum = document.getElementById('planetNum');
-    const clickBtn = document.getElementById('clickBtn');
-    const puzzle = document.getElementById('puzzle');
+    // === ДАННЫЕ ===
+    const MAP_SIZE = 6;
+    const CELLS = [
+      'Forest', 'City', 'Cave', 'Ruins', 'Lake', 'Wasteland',
+      'Forest', 'City', 'Cave', 'Ruins', 'Lake', 'Wasteland',
+      'Forest', 'City', 'Cave', 'Ruins', 'Lake', 'Wasteland',
+      'Forest', 'City', 'Cave', 'Ruins', 'Lake', 'Wasteland',
+      'Forest', 'City', 'Cave', 'Ruins', 'Lake', 'Wasteland',
+      'Forest', 'City', 'Cave', 'Ruins', 'Lake', 'Wasteland'
+    ];
+    const CELL_ICONS = { Forest: 'Tree', City: 'Building', Cave: 'Mountain', Ruins: 'Castle', Lake: 'Droplet', Wasteland: 'Skull' };
 
-    // === ИИ ГЕНЕРИРУЕТ ПЛАНЕТУ ===
-    async function generatePlanet() {
-      planetNum.textContent = `Планета #${planetId}`;
-      planetImg.src = `https://image.pollinations.ai/prompt/alien%20planet%20with%20AI%20virus%20infection%20${planetId}?width=512&height=512&seed=${Date.now()}`;
-      shield = 0;
-      shieldEl.textContent = `Защита: ${shield}%`;
-    }
-
-    // === КЛИКЕР ===
-    clickBtn.onclick = () => {
-      ton += 1 + Math.floor(shield / 20);
-      resources.textContent = `TON: ${ton}`;
-      shield = Math.min(shield + 1, 100);
-      shieldEl.textContent = `Защита: ${shield}%`;
-      Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-      if (shield === 100) {
-        alert(`ПЛАНЕТА СПАСЕНА! +${ton} TON`);
-        planetId++;
-        generatePlanet();
-        ton = 0;
-        resources.textContent = `TON: ${ton}`;
-      }
+    let state = {
+      day: 1,
+      health: 100,
+      hunger: 0,
+      fatigue: 0,
+      food: 3,
+      water: 3,
+      position: { x: 0, y: 0 },
+      visited: new Set(),
+      skills: { strength: 1, luck: 1, speed: 1 },
+      inventory: []
     };
 
-    // === ПАЗЛ 3x3 ===
-    function initPuzzle() {
-      puzzle.innerHTML = '';
-      let tiles = [1,2,3,4,5,6,7,8,''];
-      tiles.sort(() => .5 - Math.random());
-      tiles.forEach(t => {
-        const tile = document.createElement('div');
-        tile.className = 'tile' + (t===''?' empty':'');
-        tile.textContent = t;
-        tile.onclick = () => moveTile(tile, t);
-        puzzle.appendChild(tile);
-      });
+    // === ЭЛЕМЕНТЫ ===
+    const mapEl = document.getElementById('map');
+    const charEl = document.getElementById('character');
+    const logEl = document.getElementById('log');
+    const dayEl = document.getElementById('day');
+    const healthEl = document.getElementById('health');
+    const hungerEl = document.getElementById('hunger');
+    const fatigueEl = document.getElementById('fatigue');
+
+    // === ИНИЦИАЛИЗАЦИЯ ===
+    function init() {
+      loadGame();
+      renderMap();
+      updateStats();
+      updateCharacter();
+      log("Игра началась. Вы в безопасности... пока.");
     }
 
-    function moveTile(tile, num) {
-      const empty = document.querySelector('.empty');
-      if (!empty) return;
-      const i1 = Array.from(puzzle.children).indexOf(tile);
-      const i2 = Array.from(puzzle.children).indexOf(empty);
-      if (Math.abs(i1 - i2) === 1 || Math.abs(i1 - i2) === 3) {
-        empty.textContent = num;
-        empty.classList.remove('empty');
-        tile.textContent = '';
-        tile.classList.add('empty');
-        checkWin();
+    function renderMap() {
+      mapEl.innerHTML = '';
+      for (let y = 0; y < MAP_SIZE; y++) {
+        for (let x = 0; x < MAP_SIZE; x++) {
+          const idx = y * MAP_SIZE + x;
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          if (state.position.x === x && state.position.y === y) cell.classList.add('selected');
+          if (state.visited.has(idx)) cell.classList.add('visited');
+          cell.innerHTML = CELL_ICONS[CELLS[idx]];
+          cell.onclick = () => moveTo(x, y);
+          mapEl.appendChild(cell);
+        }
       }
     }
 
-    function checkWin() {
-      const tiles = Array.from(puzzle.children).map(t => t.textContent);
-      if (tiles.join('') === '12345678') {
-        ton += 10;
-        resources.textContent = `TON: ${ton}`;
-        alert('ПАЗЛ РЕШЁН! +10 TON');
-        initPuzzle();
+    function moveTo(x, y) {
+      const dist = Math.abs(x - state.position.x) + Math.abs(y - state.position.y);
+      if (dist > state.skills.speed) {
+        log("Слишком далеко! Улучшите скорость.");
+        return;
       }
+      state.position = { x, y };
+      state.fatigue += dist * 10;
+      const idx = y * MAP_SIZE + x;
+      if (!state.visited.has(idx)) {
+        state.visited.add(idx);
+        exploreCell(CELLS[idx]);
+      }
+      updateCharacter();
+      renderMap();
+      nextTurn();
+    }
+
+    function exploreCell(type) {
+      const events = {
+        Forest: ["Нашли ягоды! +2 еды", "Встретили волка! -20 здоровья", "Нашли укрытие! -20 усталости"],
+        City: ["Нашли консервы! +3 еды", "Зомби! -30 здоровья", "Нашли аптечку! +30 здоровья"],
+        Cave: ["Нашли воду! +3 воды", "Обвал! -40 здоровья", "Нашли оружие! +1 сила"],
+        Ruins: ["Нашли артефакт! +1 удача", "Ловушка! -25 здоровья", "Нашли карту! +1 скорость"],
+        Lake: ["Поймали рыбу! +3 еды", "Утонули вещи! -1 еда", "Очистили воду! +3 воды"],
+        Wasteland: ["Радиация! -20 здоровья", "Нашли топливо! +1 скорость", "Пусто..."]
+      };
+      const event = events[type][Math.floor(Math.random() * events[type].length)];
+      log(event);
+      if (event.includes("еда")) state.food += parseInt(event.match(/\d+/));
+      if (event.includes("вода")) state.water += parseInt(event.match(/\d+/));
+      if (event.includes("здоровья")) state.health += parseInt(event.match(/-?\d+/));
+      if (event.includes("усталости")) state.fatigue += parseInt(event.match(/-?\d+/));
+      if (event.includes("сила")) state.skills.strength++;
+      if (event.includes("удача")) state.skills.luck++;
+      if (event.includes("скорость")) state.skills.speed++;
+    }
+
+    function updateCharacter() {
+      const cell = mapEl.children[state.position.y * MAP_SIZE + state.position.x];
+      const rect = cell.getBoundingClientRect();
+      const mapRect = mapEl.getBoundingClientRect();
+      charEl.style.left = (rect.left - mapRect.left + 14) + 'px';
+      charEl.style.top = (rect.top - mapRect.top + 10) + 'px';
+    }
+
+    function updateStats() {
+      dayEl.textContent = state.day;
+      healthEl.style.width = state.health + '%';
+      hungerEl.style.width = state.hunger + '%';
+      fatigueEl.style.width = state.fatigue + '%';
+    }
+
+    function log(msg) {
+      const entry = document.createElement('div');
+      entry.textContent = `[День ${state.day}] ${msg}`;
+      logEl.appendChild(entry);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function nextTurn() {
+      state.hunger += 15;
+      state.fatigue += 10;
+      if (state.hunger > 100) { state.health -= 20; log("Голод! -20 здоровья"); state.hunger = 100; }
+      if (state.fatigue > 100) { state.health -= 15; log("Усталость! -15 здоровья"); state.fatigue = 100; }
+      if (state.health <= 0) { gameOver(); return; }
+
+      if (state.hunger > 80 || state.fatigue > 80) {
+        document.getElementById('explore').disabled = true;
+      } else {
+        document.getElementById('explore').disabled = false;
+      }
+
+      updateStats();
+      saveGame();
+      if (Math.random() < 0.1) randomEvent();
+    }
+
+    function randomEvent() {
+      const events = ["Нашли тайник! +5 еды", "Буря! +20 усталости", "Друг! +30 здоровья"];
+      const ev = events[Math.floor(Math.random() * events.length)];
+      log("Случайное событие: " + ev);
+      if (ev.includes("еда")) state.food += 5;
+      if (ev.includes("усталости")) state.fatigue += 20;
+      if (ev.includes("здоровья")) state.health += 30;
+    }
+
+    // === ДЕЙСТВИЯ ===
+    document.getElementById('rest').onclick = () => {
+      state.fatigue = Math.max(0, state.fatigue - 40);
+      log("Отдых: -40 усталости");
+      nextTurn();
+    };
+
+    document.getElementById('eat').onclick = () => {
+      if (state.food > 0) {
+        state.food--;
+        state.hunger = Math.max(0, state.hunger - 50);
+        log("Съели еду: -50 голода");
+        nextTurn();
+      } else log("Нет еды!");
+    };
+
+    document.getElementById('explore').onclick = () => {
+      const idx = state.position.y * MAP_SIZE + state.position.x;
+      if (state.visited.has(idx)) {
+        log("Уже исследовано!");
+      } else {
+        state.visited.add(idx);
+        exploreCell(CELLS[idx]);
+        renderMap();
+      }
+      nextTurn();
+    };
+
+    // === СОХРАНЕНИЕ ===
+    function saveGame() {
+      const save = { ...state, visited: Array.from(state.visited) };
+      localStorage.setItem('survivor_save', JSON.stringify(save));
+    }
+
+    function loadGame() {
+      const saved = localStorage.getItem('survivor_save');
+      if (saved) {
+        const data = JSON.parse(saved);
+        Object.assign(state, data);
+        state.visited = new Set(data.visited || []);
+      }
+    }
+
+    function gameOver() {
+      log(`ИГРА ОКОНЧЕНА! Выжили ${state.day} дней.`);
+      alert(`Выжили ${state.day} дней! Рекорд отправлен.`);
+      localStorage.removeItem('survivor_save');
+      Telegram.WebApp.sendData(`survived:${state.day}`);
+      setTimeout(() => location.reload(), 3000);
     }
 
     // === СТАРТ ===
-    generatePlanet();
-    initPuzzle();
-
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
-    Telegram.WebApp.MainButton.setText('Поделиться спасением').show().onClick(() => {
-      Telegram.WebApp.shareScore?.() || alert(`Я спас ${planetId} планет! TON: ${ton}`);
+    Telegram.WebApp.MainButton.setText('Поделиться выживанием').show().onClick(() => {
+      Telegram.WebApp.shareScore?.() || alert(`Я выжил ${state.day} дней в пост-апоке!`);
     });
+
+    init();
+    setInterval(() => { state.day++; log(`Новый день: ${state.day}`); nextTurn(); }, 30000); // Новый день каждые 30 сек
   </script>
 </body>
 </html>
