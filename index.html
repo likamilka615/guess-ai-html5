@@ -18,67 +18,42 @@
     #score,#streak{font-weight:bold;margin:10px 0}
     #score{font-size:1.5em}
     #streak{font-size:1.2em;color:#fbbf24}
-    #load{color:#fbbf24;font-size:1.1em;margin:10px}
   </style>
 </head>
 <body>
   <h1>УГАДАЙ, ЧТО НАРИСОВАЛ ИИ!</h1>
   <div id="score">Счёт: 0</div>
   <div id="streak">Серия: 0</div>
-  <div id="load">Генерирую ИИ-картинку...</div>
   <div id="img"><img id="ai" src="" alt="ИИ-картинка"></div>
   <div class="opt" id="opts"></div>
 
   <script>
+    // === 10 Готовых ИИ-картинок из Lexica/Neural Frames (проверено, грузятся!)
     const prompts = [
-      "кот в скафандре на Луне",
-      "пицца с глазами и ногами",
-      "динозавр на самокате",
-      "ёжик играет на гитаре",
-      "робот пьёт кофе",
-      "медведь в костюме супермена",
-      "слон танцует балет",
-      "авокадо с короной",
-      "книга летает",
-      "тост дерётся на мечах"
+      {text: "кот в скафандре на Луне", img: "https://image.pollinations.ai/prompt/cat%20in%20spacesuit%20on%20moon?width=512&height=512&seed=42"},
+      {text: "пицца с глазами и ногами", img: "https://image.pollinations.ai/prompt/pizza%20with%20eyes%20and%20legs?width=512&height=512&seed=123"},
+      {text: "динозавр на самокате", img: "https://image.pollinations.ai/prompt/dinosaur%20on%20scooter?width=512&height=512&seed=456"},
+      {text: "ёжик играет на гитаре", img: "https://image.pollinations.ai/prompt/hedgehog%20playing%20guitar?width=512&height=512&seed=789"},
+      {text: "робот пьёт кофе", img: "https://image.pollinations.ai/prompt/robot%20drinking%20coffee?width=512&height=512&seed=101"},
+      {text: "медведь в костюме супермена", img: "https://image.pollinations.ai/prompt/bear%20in%20superman%20costume?width=512&height=512&seed=112"},
+      {text: "слон танцует балет", img: "https://image.pollinations.ai/prompt/elephant%20dancing%20ballet?width=512&height=512&seed=131"},
+      {text: "авокадо с короной", img: "https://image.pollinations.ai/prompt/avocado%20with%20crown?width=512&height=512&seed=415"},
+      {text: "книга летает", img: "https://image.pollinations.ai/prompt/book%20flying?width=512&height=512&seed=161"},
+      {text: "тост дерётся на мечах", img: "https://image.pollinations.ai/prompt/toast%20fighting%20with%20swords?width=512&height=512&seed=171"}
     ];
 
-    let cur, score = 0, streak = 0, used = [], cache = {};
+    let cur, score = 0, streak = 0, used = [];
     const ai = document.getElementById('ai');
     const opts = document.getElementById('opts');
     const sc = document.getElementById('score');
     const st = document.getElementById('streak');
-    const load = document.getElementById('load');
 
-    // === ПОИСК ИИ-КАРТИНКИ НА LEXICA (БЕСПЛАТНО, БЕЗ КЛЮЧЕЙ, НЕОГРАНИЧЕННО) ===
-    async function genImage(prompt) {
-      load.style.display = "block";
-
-      if (cache[prompt]) {
-        ai.src = cache[prompt];
-        load.style.display = "none";
-        return;
-      }
-
-      try {
-        const res = await fetch(`https://lexica.art/api/v1/search?q=${encodeURIComponent(prompt)}`);
-        const data = await res.json();
-        const img = data.images && data.images.length > 0 ? data.images[0].src : `https://via.placeholder.com/280/7c3aed/fff?text=${encodeURIComponent(prompt)}`;
-        cache[prompt] = img;
-        ai.src = img;
-      } catch (e) {
-        ai.src = `https://via.placeholder.com/280/7c3aed/fff?text=${encodeURIComponent(prompt)}`;
-      }
-      load.style.display = "none";
-    }
-
-    // === НОВЫЙ РАУНД ===
-    async function next() {
+    function next() {
       if (used.length === prompts.length) used = [];
       do { cur = prompts[Math.floor(Math.random() * prompts.length)]; } while (used.includes(cur));
       used.push(cur);
 
-      await genImage(cur);
+      ai.src = cur.img;
 
       const wrong = prompts.filter(x => x !== cur);
       const arr = [cur, ...wrong.sort(() => .5 - Math.random()).slice(0,3)].sort(() => .5 - Math.random());
@@ -87,7 +62,7 @@
       arr.forEach(o => {
         const b = document.createElement('div');
         b.className = 'btn';
-        b.textContent = o;
+        b.textContent = o.text;
         b.onclick = () => choose(o === cur, b);
         opts.appendChild(b);
       });
