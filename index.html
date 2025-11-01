@@ -1,272 +1,229 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Post-Apoc Hamster</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>TON Survivor: Boinkers</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: 'Segoe UI', sans-serif; 
-      background: linear-gradient(135deg, #1a1a2e, #16213e); 
-      color: #fff; 
-      text-align: center; 
-      padding: 15px; 
-      min-height: 100vh; 
-      overflow: hidden;
+    :root {
+      --bg: #1a1a2e;
+      --accent: #ff6b6b;
+      --gold: #ffd93d;
+      --blue: #4ecdc4;
+      --dark: #16213e;
     }
-    h1 { 
-      font-size: 1.8em; 
-      margin: 10px 0; 
-      background: linear-gradient(45deg, #ffd700, #ff6b6b);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: titleGlow 2s infinite;
-    }
-    @keyframes titleGlow { 0%,100% { filter: drop-shadow(0 0 10px #ffd700); } 50% { filter: drop-shadow(0 0 20px #ff6b6b); } }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Comic Sans MS', cursive; }
+    body { background:var(--bg); color:white; overflow:hidden; height:100vh; }
+    .container { padding:10px; text-align:center; }
+    .header { display:flex; justify-content:space-between; align-items:center; background:var(--dark); padding:10px; border-radius:15px; margin-bottom:10px; }
+    .user { display:flex; align-items:center; gap:10px; }
+    .user-avatar { font-size:40px; } /* Тони-ёжик */
+    .stats { display:flex; gap:15px; font-weight:bold; }
+    .stats div { background:var(--accent); padding:5px 10px; border-radius:10px; font-size:14px; }
 
-    /* === СТАТЫ === */
-    #stats { 
-      display: flex; 
-      justify-content: space-around; 
-      background: rgba(255,255,255,0.1); 
-      padding: 12px; 
-      border-radius: 16px; 
-      margin: 10px 0;
-      backdrop-filter: blur(10px);
-    }
-    .stat { font-size: 0.9em; }
-    .bar { width: 70px; height: 10px; background: #333; border-radius: 5px; margin-top: 4px; overflow: hidden; }
-    .fill { height: 100%; border-radius: 5px; transition: width 0.3s ease; }
-    #health .fill { background: linear-gradient(90deg, #ff4757, #ff6b6b); }
-    #hunger .fill { background: linear-gradient(90deg, #ffa502, #ff6b6b); }
-    #fatigue .fill { background: linear-gradient(90deg, #1e90ff, #00d2ff); }
+    .boinkers { position:relative; margin:20px 0; font-size:24px; } /* Шатёр */
+    .boinkers::before { content: '🎪'; animation: bounce 2s infinite; }
+    @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .leaderboard { background:#000; color:#ffd93d; padding:5px 15px; border-radius:20px; font-weight:bold; display:inline-block; margin-top:10px; }
 
-    /* === ПЕРСОНАЖ === */
-    #characterContainer { 
-      position: relative; 
-      width: 150px; 
-      height: 150px; 
-      margin: 20px auto; 
-      cursor: pointer; 
-    }
-    #character { 
-      font-size: 6em; 
-      filter: drop-shadow(0 0 15px #ffd700);
-      animation: idle 2s infinite;
-      user-select: none;
-    }
-    @keyframes idle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-    .coin { 
-      position: absolute; 
-      font-size: 1.5em; 
-      pointer-events: none; 
-      animation: coinFly 1s forwards; 
-      color: #ffd700;
-      text-shadow: 0 0 10px #ffd700;
-    }
-    @keyframes coinFly { 
-      0% { transform: translateY(0) scale(1); opacity: 1; } 
-      100% { transform: translateY(-100px) scale(0.5); opacity: 0; } 
-    }
+    .slot-machine { background:#0f3460; border:8px solid #4ecdc4; border-radius:20px; padding:15px; margin:15px 0; }
+    .reels { display:flex; justify-content:center; gap:10px; margin:15px 0; }
+    .reel { width:70px; height:70px; background:#16213e; border-radius:15px; font-size:40px; display:flex; align-items:center; justify-content:center; transition: transform 0.3s; }
+    .reel.spin { animation: spin 0.5s ease-in-out; }
+    @keyframes spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
 
-    /* === КАРТОЧКИ === */
-    .card { 
-      background: rgba(255,255,255,0.1); 
-      border-radius: 16px; 
-      padding: 15px; 
-      margin: 10px 0; 
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-    .btn { 
-      background: linear-gradient(45deg, #ffd700, #ff6b6b); 
-      color: #000; 
-      border: none; 
-      padding: 14px; 
-      margin: 8px; 
-      border-radius: 12px; 
-      font-weight: bold; 
-      cursor: pointer; 
-      transition: all 0.2s;
-      min-width: 120px;
-    }
-    .btn:active { transform: scale(0.95); box-shadow: 0 0 20px #ffd700; }
+    .progress { height:20px; background:#16213e; border-radius:10px; overflow:hidden; margin:10px 0; }
+    .fill { height:100%; width:68%; background:linear-gradient(90deg, #4ecdc4, #ffd93d); transition: width 0.3s; }
 
-    /* === КАРТА === */
-    #mapContainer { 
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-      background: rgba(0,0,0,0.95); display: none; z-index: 100; padding: 20px; 
-      overflow: auto;
-    }
-    #map { 
-      display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; 
-      width: 300px; margin: 50px auto; 
-    }
-    .cell { 
-      width: 55px; height: 55px; 
-      background: linear-gradient(135deg, #333, #222); 
-      border-radius: 12px; 
-      font-size: 1.8em; 
-      display: flex; align-items: center; justify-content: center; 
-      cursor: pointer; 
-      transition: all 0.2s;
-      border: 2px solid transparent;
-    }
-    .cell:hover { transform: scale(1.1); box-shadow: 0 0 15px #ffd700; }
-    .cell.selected { border: 3px solid #ffd700; animation: pulse 1s infinite; }
+    .events { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:15px 0; font-size:12px; }
+    .event { background:var(--dark); padding:8px; border-radius:12px; }
+    .event-emoji { font-size:30px; display:block; margin-bottom:5px; }
 
-    /* === УЛУЧШЕНИЯ === */
-    .upgrade { 
-      display: flex; justify-content: space-between; align-items: center; 
-      background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin: 8px 0;
+    .spin-btn { 
+      background:linear-gradient(45deg, #ffd93d, #ff6b6b); 
+      color:#000; font-weight:bold; font-size:20px; 
+      padding:15px 30px; border-radius:50px; border:none; 
+      margin:10px; box-shadow:0 5px 15px rgba(255,215,61,0.4); cursor:pointer;
     }
-    .upgrade button { background: #00d2ff; color: #000; padding: 8px 12px; border-radius: 8px; font-size: 0.8em; }
-
-    /* === ЗВУКИ === */
-    .hidden { display: none; }
+    .spin-btn:active { transform: scale(0.95); }
+    .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:var(--dark); display:flex; justify-content:space-around; padding:10px 0; }
+    .nav-item { text-align:center; font-size:12px; }
+    .nav-item-emoji { font-size:30px; display:block; }
   </style>
 </head>
 <body>
+  <div class="container">
 
-  <h1>POST-APOC HAMSTER</h1>
-
-  <!-- СТАТЫ -->
-  <div id="stats">
-    <div class="stat">День: <span id="day">1</span></div>
-    <div class="stat">TON: <span id="ton">0</span></div>
-    <div class="stat">Уровень: <span id="level">1</span></div>
-  </div>
-
-  <!-- ПЕРСОНАЖ -->
-  <div id="characterContainer" onclick="clickCharacter()">
-    <div id="character">Hamster</div>
-  </div>
-
-  <!-- ПРОКАЧКА -->
-  <div class="card">
-    <h3>ПРОКАЧКА</h3>
-    <div class="upgrade">
-      <span>Сила атаки: <span id="power">1</span></span>
-      <button onclick="upgrade('power', 100)">+1 (100 TON)</button>
+    <!-- HEADER -->
+    <div class="header">
+      <div class="user">
+        <div class="user-avatar">🦔</div> <!-- Тони -->
+        <div>
+          <div>Toni the Hedgecoin</div>
+          <small>Уровень 63</small>
+        </div>
+      </div>
+      <div class="stats">
+        <div id="ton">🪙 36.66M</div>
+        <div id="cash">💰 376</div>
+        <div id="energy">⚡ 50/50</div>
+      </div>
     </div>
-    <div class="upgrade">
-      <span>Скорость: <span id="speed">1</span></span>
-      <button onclick="upgrade('speed', 150)">+1 (150 TON)</button>
+
+    <!-- BOINKERS TENT -->
+    <div class="boinkers">
+      <div class="leaderboard">Erlna 5.3M</div>
+    </div>
+
+    <!-- SLOT MACHINE -->
+    <div class="slot-machine">
+      <div class="reels">
+        <div class="reel" id="reel1">🥫</div>
+        <div class="reel" id="reel2">🛡️</div>
+        <div class="reel" id="reel3">💰</div>
+      </div>
+      <div class="progress"><div class="fill" id="progress-fill"></div></div>
+      <div style="display:flex; justify-content:space-between; font-size:14px;">
+        <span>FREE PASS</span>
+        <span id="free-pass">68/100</span>
+      </div>
+    </div>
+
+    <!-- EVENTS (с эмодзи как изображения) -->
+    <div class="events">
+      <div class="event">
+        <div class="event-emoji">👻</div> SCARECROWS<br><small id="scarecrow-timer">02:00:33</small>
+      </div>
+      <div class="event">
+        <div class="event-emoji">🧟</div> MUMMY<br><small id="mummy-timer">05:23:33</small>
+      </div>
+      <div class="event">
+        <div class="event-emoji">🏰</div> HAUNTED<br><small id="haunted-timer">01:36:33</small>
+      </div>
+      <div class="event">
+        <div class="event-emoji">🍬</div> CANDY BAG<br><small id="candy-timer">02:00:33</small>
+      </div>
+      <div class="event">
+        <div class="event-emoji">⭐</div> STAR<br><small id="star-timer">12:00:33</small>
+      </div>
+      <div class="event">
+        <div class="event-emoji">🎃</div> LET'S<br><small id="lets-timer">13:00:00</small>
+      </div>
+    </div>
+
+    <!-- SPIN BUTTONS -->
+    <button class="spin-btn" onclick="spinSingle()">КРУТИТЬ ОДИНОЧКУ</button>
+    <button class="spin-btn" style="background:#ff6b6b;" onclick="startAutoSpin()">КРУТИТЬ ВСЁ</button>
+    <div id="result" style="margin:10px; font-size:18px; color:#ffd93d;"></div>
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+      <div class="nav-item"><div class="nav-item-emoji">🌕</div>Moon</div>
+      <div class="nav-item"><div class="nav-item-emoji">🪪</div>Stickers</div>
+      <div class="nav-item"><div class="nav-item-emoji">🎡</div>Wheel</div>
+      <div class="nav-item"><div class="nav-item-emoji">💵</div>Заработать</div>
     </div>
   </div>
-
-  <!-- КНОПКИ -->
-  <div>
-    <button class="btn" id="openMap">Карта</button>
-    <button class="btn" id="openShop">Магазин</button>
-  </div>
-
-  <!-- КАРТА -->
-  <div id="mapContainer">
-    <button class="btn" style="position:absolute;top:10px;right:10px;" id="closeMap">Закрыть</button>
-    <h2>КАРТА МИРА</h2>
-    <div id="map"></div>
-  </div>
-
-  <!-- АУДИО -->
-  <audio id="clickSound" class="hidden" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3"></audio>
-  <audio id="levelSound" class="hidden" src="https://assets.mixkit.co/sfx/preview/mixkit-level-up-achievement-2070.mp3"></audio>
 
   <script>
-    let state = { ton: 0, day: 1, level: 1, power: 1, speed: 1, position: {x:2,y:2} };
-    const tonEl = document.getElementById('ton');
-    const dayEl = document.getElementById('day');
-    const levelEl = document.getElementById('level');
-    const clickSound = document.getElementById('clickSound');
-    const levelSound = document.getElementById('levelSound');
-
-    // === КЛИК ПО ХАМСТЕРУ ===
-    function clickCharacter() {
-      state.ton += state.power;
-      tonEl.textContent = state.ton;
-      createCoin();
-      playSound(clickSound);
-      Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-      if (state.ton % 500 === 0) levelUp();
+    // Telegram init
+    if (typeof Telegram !== 'undefined') {
+      Telegram.WebApp.ready();
+      Telegram.WebApp.expand();
     }
 
-    function createCoin() {
-      const coin = document.createElement('div');
-      coin.className = 'coin';
-      coin.textContent = 'Coin';
-      coin.style.left = (Math.random() * 100) + 'px';
-      coin.style.top = (Math.random() * 50 + 50) + 'px';
-      document.getElementById('characterContainer').appendChild(coin);
-      setTimeout(() => coin.remove(), 1000);
+    const symbols = ['🥫', '🛡️', '💰', '⚡', '🍯', '👻', '💎'];
+    let autoInterval = null;
+
+    function spinSingle() {
+      if (getEnergy() < 1) { showResult('Нет энергии!'); return; }
+      spinReels();
+      updateEnergy(-1);
+      setTimeout(checkWin, 600);
     }
 
-    function levelUp() {
-      state.level++;
-      levelEl.textContent = state.level;
-      playSound(levelSound);
-      alert(`УРОВЕНЬ ${state.level}! +1 к силе!`);
-      state.power++;
+    function startAutoSpin() {
+      if (autoInterval) { clearInterval(autoInterval); autoInterval = null; showResult('Авто остановлено'); return; }
+      autoInterval = setInterval(() => {
+        if (getEnergy() < 1) { clearInterval(autoInterval); autoInterval = null; showResult('Энергия кончилась'); return; }
+        spinReels();
+        updateEnergy(-1);
+        setTimeout(checkWin, 600);
+      }, 1000);
+      showResult('Авто запущено!');
     }
 
-    function playSound(audio) {
-      audio.currentTime = 0;
-      audio.play().catch(() => {});
+    function spinReels() {
+      const reels = ['reel1', 'reel2', 'reel3'];
+      reels.forEach((id, i) => {
+        const reel = document.getElementById(id);
+        reel.classList.add('spin');
+        setTimeout(() => {
+          reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+          reel.classList.remove('spin');
+        }, (i + 1) * 200);
+      });
     }
 
-    // === ПРОКАЧКА ===
-    function upgrade(type, cost) {
-      if (state.ton >= cost) {
-        state.ton -= cost;
-        state[type]++;
-        document.getElementById(type).textContent = state[type];
-        tonEl.textContent = state.ton;
+    function checkWin() {
+      const r1 = document.getElementById('reel1').textContent;
+      const r2 = document.getElementById('reel2').textContent;
+      const r3 = document.getElementById('reel3').textContent;
+      if (r1 === r2 && r2 === r3) {
+        let bonus = r1 === '💰' ? 10 : r1 === '💎' ? 100 : 5;
+        updateTon(bonus);
+        showResult(`Джекпот! +${bonus} TON!`);
       } else {
-        alert("Недостаточно TON!");
+        showResult('Не повезло...');
       }
     }
 
-    // === КАРТА ===
-    document.getElementById('openMap').onclick = () => {
-      document.getElementById('mapContainer').style.display = 'block';
-      renderMap();
-    };
-    document.getElementById('closeMap').onclick = () => {
-      document.getElementById('mapContainer').style.display = 'none';
-    };
+    function updateTon(delta) {
+      let current = parseFloat(document.getElementById('ton').textContent.match(/(\d+\.?\d*)/)[0]);
+      document.getElementById('ton').textContent = `🪙 ${(current + delta).toFixed(2)}M`;
+    }
 
-    function renderMap() {
-      const map = document.getElementById('map');
-      map.innerHTML = '';
-      for (let y = 0; y < 5; y++) {
-        for (let x = 0; x < 5; x++) {
-          const cell = document.createElement('div');
-          cell.className = 'cell';
-          if (state.position.x === x && state.position.y === y) cell.classList.add('selected');
-          cell.innerHTML = ['Forest','City','Cave','Ruins','Lake'][Math.floor(Math.random()*5)];
-          cell.onclick = () => {
-            state.position = {x,y};
-            alert(`Перемещение на ${x},${y}!`);
-            renderMap();
-          };
-          map.appendChild(cell);
+    function getEnergy() {
+      return parseInt(document.getElementById('energy').textContent.match(/(\d+)\/(\d+)/)[1]);
+    }
+
+    function updateEnergy(delta) {
+      let [current, max] = document.getElementById('energy').textContent.match(/(\d+)\/(\d+)/).slice(1).map(Number);
+      current = Math.max(0, Math.min(max, current + delta));
+      document.getElementById('energy').textContent = `⚡ ${current}/${max}`;
+      if (current < max) setTimeout(() => updateEnergy(1), 5000); // Реген
+    }
+
+    function showResult(msg) {
+      const el = document.getElementById('result');
+      el.textContent = msg;
+      setTimeout(() => el.textContent = '', 3000);
+    }
+
+    // Таймеры
+    const timers = {
+      'scarecrow-timer': {h:2,m:0,s:33}, 'mummy-timer': {h:5,m:23,s:33},
+      'haunted-timer': {h:1,m:36,s:33}, 'candy-timer': {h:2,m:0,s:33},
+      'star-timer': {h:12,m:0,s:33}, 'lets-timer': {h:13,m:0,s:0}
+    };
+    function updateTimers() {
+      Object.entries(timers).forEach(([id, t]) => {
+        if (t.s > 0 || t.m > 0 || t.h > 0) {
+          t.s--; if (t.s < 0) { t.s=59; t.m--; } if (t.m < 0) { t.m=59; t.h--; }
+          document.getElementById(id).textContent = `${t.h.toString().padStart(2,'0')}:${t.m.toString().padStart(2,'0')}:${t.s.toString().padStart(2,'0')}`;
         }
-      }
+      });
     }
+    setInterval(updateTimers, 1000);
 
-    // === СТАРТ ===
-    Telegram.WebApp.ready();
-    Telegram.WebApp.expand();
-    Telegram.WebApp.MainButton.setText('Поделиться').show().onClick(() => {
-      Telegram.WebApp.shareScore?.() || alert(`Я набрал ${state.ton} TON на уровне ${state.level}!`);
-    });
-
+    // Прогресс
     setInterval(() => {
-      state.day++;
-      dayEl.textContent = state.day;
-      if (state.day % 5 === 0) alert(`ДЕНЬ ${state.day}: БОСС!`);
-    }, 30000);
+      let w = parseInt(document.getElementById('progress-fill').style.width) || 68;
+      w = (w + 1) % 100;
+      document.getElementById('progress-fill').style.width = w + '%';
+      document.getElementById('free-pass').textContent = `${w}/100`;
+    }, 2000);
   </script>
 </body>
 </html>
