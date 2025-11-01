@@ -3,28 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Выживальщик</title>
+  <title>Выживальщик: Пост-Апок</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #0f0; text-align: center; padding: 10px; min-height: 100vh; }
-    h1 { font-size: 1.5em; margin: 10px 0; text-shadow: 0 0 5px #0f0; }
+    body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #0f0; text-align: center; padding: 10px; min-height: 100vh; overflow: hidden; }
+    h1 { font-size: 1.6em; margin: 10px 0; text-shadow: 0 0 8px #0f0; animation: glow 2s infinite alternate; }
+    @keyframes glow { from { text-shadow: 0 0 5px #0f0; } to { text-shadow: 0 0 15px #0f0; } }
+
+    /* === СТАТЫ === */
     #stats { display: flex; justify-content: space-around; margin: 10px 0; font-size: 0.9em; }
-    .bar { width: 60px; height: 8px; background: #333; margin-top: 3px; }
-    .fill { height: 100%; background: #0f0; transition: width 0.3s; }
-    #map { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; width: 300px; margin: 15px auto; }
-    .cell { width: 48px; height: 48px; background: #222; border: 1px solid #0f0; font-size: 1.5em; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .cell.selected { border: 2px solid #ff0; box-shadow: 0 0 10px #ff0; }
-    .cell.visited { background: #003300; }
-    #character { position: absolute; font-size: 1.8em; transition: all 0.3s; pointer-events: none; }
-    #log { height: 80px; overflow-y: auto; background: #111; padding: 8px; margin: 10px 0; font-size: 0.8em; text-align: left; border: 1px solid #0f0; }
-    #actions button { margin: 5px; padding: 10px; background: #003300; color: #0f0; border: 1px solid #0f0; cursor: pointer; }
-    #actions button:disabled { opacity: 0.5; cursor: not-allowed; }
-    #leaderboard { margin-top: 15px; font-size: 0.8em; color: #ff0; }
+    .bar { width: 60px; height: 8px; background: #222; border: 1px solid #0f0; margin-top: 3px; }
+    .fill { height: 100%; transition: width 0.4s ease; }
+    #health .fill { background: #f00; }
+    #hunger .fill { background: #ff0; }
+    #fatigue .fill { background: #0ff; }
+
+    /* === КНОПКИ === */
+    .btn { margin: 8px; padding: 12px 16px; background: #003300; color: #0f0; border: 1px solid #0f0; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+    .btn:active { transform: scale(0.95); box-shadow: 0 0 15px #0f0; }
+
+    /* === КАРТА === */
+    #mapContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; z-index: 100; padding: 20px; }
+    #map { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; width: 320px; margin: 40px auto; transform: scale(0.9); transition: transform 0.3s; }
+    #map.zoom { transform: scale(1.1); }
+    .cell { width: 50px; height: 50px; background: #111; border: 1px solid #0f0; font-size: 1.8em; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; }
+    .cell:hover { background: #003300; transform: scale(1.1); box-shadow: 0 0 10px #0f0; }
+    .cell.visited { background: #002200; opacity: 0.7; }
+    .cell.selected { border: 3px solid #ff0; box-shadow: 0 0 20px #ff0; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 10px #ff0; } 50% { box-shadow: 0 0 25px #ff0; } }
+
+    /* === ПЕРСОНАЖ === */
+    #character { position: absolute; font-size: 2em; pointer-events: none; transition: all 0.4s ease; z-index: 10; }
+    #character::after { content: ''; position: absolute; top: -10px; left: -10px; width: 60px; height: 60px; background: radial-gradient(circle, #0f0 10%, transparent 70%); opacity: 0.5; border-radius: 50%; animation: aura 2s infinite; }
+    @keyframes aura { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.3); opacity: 0.3; } }
+
+    /* === ЛОГ === */
+    #log { height: 90px; overflow-y: auto; background: #111; padding: 10px; margin: 10px 0; font-size: 0.85em; text-align: left; border: 1px solid #0f0; border-radius: 8px; }
+
+    /* === МЕНЮ НАСТРОЕК === */
+    #settingsMenu { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; z-index: 200; padding: 20px; }
+    #settingsMenu h2 { color: #0ff; margin-bottom: 20px; }
+    .setting { margin: 15px 0; text-align: left; }
+    .setting label { display: block; margin-bottom: 5px; }
+
+    /* === ЧАСТИЦЫ === */
+    .particle { position: absolute; font-size: 1.5em; pointer-events: none; animation: float 1s forwards; opacity: 0; }
+    @keyframes float { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-50px); opacity: 0; } }
   </style>
 </head>
 <body>
-  <h1>ВЫЖИВАЛЬЩИК</h1>
+
+  <h1>ВЫЖИВАЛЬЩИК: ПОСТ-АПОК</h1>
+
+  <!-- СТАТЫ -->
   <div id="stats">
     <div>День: <span id="day">1</span></div>
     <div>Здоровье: <div class="bar"><div id="health" class="fill" style="width:100%"></div></div></div>
@@ -32,30 +64,59 @@
     <div>Усталость: <div class="bar"><div id="fatigue" class="fill" style="width:0%"></div></div></div>
   </div>
 
-  <div style="position:relative; width:300px; height:300px; margin:0 auto;">
-    <div id="map"></div>
-    <div id="character">Person</div>
+  <!-- ОСНОВНЫЕ КНОПКИ -->
+  <div>
+    <button class="btn" id="openMap">Открыть Карту</button>
+    <button class="btn" id="openSettings">Настройки</button>
   </div>
 
-  <div id="log">Игра началась. Выберите клетку на карте.</div>
+  <!-- ЛОГ -->
+  <div id="log">Игра началась. Вы в безопасности... пока.</div>
+
+  <!-- ДЕЙСТВИЯ -->
   <div id="actions">
-    <button id="rest">Отдыхать</button>
-    <button id="eat">Съесть еду</button>
-    <button id="explore">Исследовать</button>
+    <button class="btn" id="rest">Отдыхать</button>
+    <button class="btn" id="eat">Съесть еду</button>
+    <button class="btn" id="explore">Исследовать</button>
   </div>
-  <div id="leaderboard">Лидер: @user — 15 дней</div>
+
+  <!-- КАРТА (скрытая) -->
+  <div id="mapContainer">
+    <button class="btn" style="position:absolute; top:10px; right:10px;" id="closeMap">Закрыть</button>
+    <h2>КАРТА МИРА</h2>
+    <div style="position:relative; width:320px; height:320px; margin:0 auto;">
+      <div id="map"></div>
+      <div id="character">Person</div>
+    </div>
+  </div>
+
+  <!-- МЕНЮ НАСТРОЕК -->
+  <div id="settingsMenu">
+    <button class="btn" style="position:absolute; top:10px; right:10px;" id="closeSettings">Закрыть</button>
+    <h2>НАСТРОЙКИ</h2>
+    <div class="setting">
+      <label>Громкость эффектов: <input type="range" id="volume" min="0" max="100" value="70"></label>
+    </div>
+    <div class="setting">
+      <label>Тема: 
+        <select id="theme">
+          <option value="dark">Тёмная</option>
+          <option value="neon">Неон</option>
+        </select>
+      </label>
+    </div>
+    <div class="setting">
+      <button class="btn" id="resetGame">Сбросить прогресс</button>
+    </div>
+    <div class="setting">
+      <button class="btn" id="shareRecord">Поделиться рекордом</button>
+    </div>
+  </div>
 
   <script>
     // === ДАННЫЕ ===
     const MAP_SIZE = 6;
-    const CELLS = [
-      'Forest', 'City', 'Cave', 'Ruins', 'Lake', 'Wasteland',
-      'Forest', 'City', 'Cave', 'Ruins', 'Lake', 'Wasteland',
-      'Forest', 'City', 'Cave', 'Ruins', 'Lake', 'Wasteland',
-      'Forest', 'City', 'Cave', 'Ruins', 'Lake', 'Wasteland',
-      'Forest', 'City', 'Cave', 'Ruins', 'Lake', 'Wasteland',
-      'Forest', 'City', 'Cave', 'Ruins', 'Lake', 'Wasteland'
-    ];
+    const CELL_TYPES = ['Forest', 'City', 'Cave', 'Ruins', 'Lake', 'Wasteland'];
     const CELL_ICONS = { Forest: 'Tree', City: 'Building', Cave: 'Mountain', Ruins: 'Castle', Lake: 'Droplet', Wasteland: 'Skull' };
 
     let state = {
@@ -63,15 +124,16 @@
       health: 100,
       hunger: 0,
       fatigue: 0,
-      food: 3,
-      water: 3,
-      position: { x: 0, y: 0 },
+      food: 5,
+      water: 5,
+      position: { x: 2, y: 2 },
       visited: new Set(),
-      skills: { strength: 1, luck: 1, speed: 1 },
-      inventory: []
+      skills: { strength: 1, luck: 1, speed: 2 },
+      map: []
     };
 
     // === ЭЛЕМЕНТЫ ===
+    const mapContainer = document.getElementById('mapContainer');
     const mapEl = document.getElementById('map');
     const charEl = document.getElementById('character');
     const logEl = document.getElementById('log');
@@ -79,14 +141,14 @@
     const healthEl = document.getElementById('health');
     const hungerEl = document.getElementById('hunger');
     const fatigueEl = document.getElementById('fatigue');
+    const settingsMenu = document.getElementById('settingsMenu');
 
-    // === ИНИЦИАЛИЗАЦИЯ ===
-    function init() {
-      loadGame();
-      renderMap();
-      updateStats();
-      updateCharacter();
-      log("Игра началась. Вы в безопасности... пока.");
+    // === ИНИЦИАЛИЗАЦИЯ КАРТЫ ===
+    function generateMap() {
+      state.map = [];
+      for (let i = 0; i < MAP_SIZE * MAP_SIZE; i++) {
+        state.map.push(CELL_TYPES[Math.floor(Math.random() * CELL_TYPES.length)]);
+      }
     }
 
     function renderMap() {
@@ -98,127 +160,121 @@
           cell.className = 'cell';
           if (state.position.x === x && state.position.y === y) cell.classList.add('selected');
           if (state.visited.has(idx)) cell.classList.add('visited');
-          cell.innerHTML = CELL_ICONS[CELLS[idx]];
+          cell.innerHTML = CELL_ICONS[state.map[idx]];
           cell.onclick = () => moveTo(x, y);
           mapEl.appendChild(cell);
         }
       }
-    }
-
-    function moveTo(x, y) {
-      const dist = Math.abs(x - state.position.x) + Math.abs(y - state.position.y);
-      if (dist > state.skills.speed) {
-        log("Слишком далеко! Улучшите скорость.");
-        return;
-      }
-      state.position = { x, y };
-      state.fatigue += dist * 10;
-      const idx = y * MAP_SIZE + x;
-      if (!state.visited.has(idx)) {
-        state.visited.add(idx);
-        exploreCell(CELLS[idx]);
-      }
       updateCharacter();
-      renderMap();
-      nextTurn();
-    }
-
-    function exploreCell(type) {
-      const events = {
-        Forest: ["Нашли ягоды! +2 еды", "Встретили волка! -20 здоровья", "Нашли укрытие! -20 усталости"],
-        City: ["Нашли консервы! +3 еды", "Зомби! -30 здоровья", "Нашли аптечку! +30 здоровья"],
-        Cave: ["Нашли воду! +3 воды", "Обвал! -40 здоровья", "Нашли оружие! +1 сила"],
-        Ruins: ["Нашли артефакт! +1 удача", "Ловушка! -25 здоровья", "Нашли карту! +1 скорость"],
-        Lake: ["Поймали рыбу! +3 еды", "Утонули вещи! -1 еда", "Очистили воду! +3 воды"],
-        Wasteland: ["Радиация! -20 здоровья", "Нашли топливо! +1 скорость", "Пусто..."]
-      };
-      const event = events[type][Math.floor(Math.random() * events[type].length)];
-      log(event);
-      if (event.includes("еда")) state.food += parseInt(event.match(/\d+/));
-      if (event.includes("вода")) state.water += parseInt(event.match(/\d+/));
-      if (event.includes("здоровья")) state.health += parseInt(event.match(/-?\d+/));
-      if (event.includes("усталости")) state.fatigue += parseInt(event.match(/-?\d+/));
-      if (event.includes("сила")) state.skills.strength++;
-      if (event.includes("удача")) state.skills.luck++;
-      if (event.includes("скорость")) state.skills.speed++;
     }
 
     function updateCharacter() {
       const cell = mapEl.children[state.position.y * MAP_SIZE + state.position.x];
       const rect = cell.getBoundingClientRect();
       const mapRect = mapEl.getBoundingClientRect();
-      charEl.style.left = (rect.left - mapRect.left + 14) + 'px';
-      charEl.style.top = (rect.top - mapRect.top + 10) + 'px';
+      charEl.style.left = (rect.left - mapRect.left + 10) + 'px';
+      charEl.style.top = (rect.top - mapRect.top + 5) + 'px';
     }
 
+    // === ДВИЖЕНИЕ ===
+    function moveTo(x, y) {
+      const dist = Math.abs(x - state.position.x) + Math.abs(y - state.position.y);
+      if (dist > state.skills.speed) {
+        log("Слишком далеко!");
+        return;
+      }
+      state.position = { x, y };
+      state.fatigue += dist * 12;
+      const idx = y * MAP_SIZE + x;
+      if (!state.visited.has(idx)) {
+        state.visited.add(idx);
+        exploreCell(state.map[idx]);
+        createParticles(x, y, 'Dust');
+      }
+      renderMap();
+      nextTurn();
+    }
+
+    // === ИССЛЕДОВАНИЕ ===
+    function exploreCell(type) {
+      const events = {
+        Forest: ["+2 еда", "-15 здоровье (волк)", "-20 усталость"],
+        City: ["+3 еда", "-30 здоровье (зомби)", "+30 здоровье (аптечка)"],
+        Cave: ["+3 вода", "-40 здоровье (обвал)", "+1 сила"],
+        Ruins: ["+1 удача", "-25 здоровье (ловушка)", "+1 скорость"],
+        Lake: ["+3 еда", "-1 еда (утонуло)", "+3 вода"],
+        Wasteland: ["-20 здоровье (радиация)", "+1 скорость", "Пусто"]
+      };
+      const ev = events[type][Math.floor(Math.random() * events[type].length)];
+      log(`Исследовано: ${type} — ${ev}`);
+      // Парсинг эффектов (упрощённо)
+      if (ev.includes("еда")) state.food += parseInt(ev.match(/-?\d+/) || 2);
+      if (ev.includes("вода")) state.water += parseInt(ev.match(/-?\d+/) || 2);
+      if (ev.includes("здоровье")) state.health += parseInt(ev.match(/-?\d+/));
+      if (ev.includes("усталость")) state.fatigue += parseInt(ev.match(/-?\d+/));
+      if (ev.includes("сила")) state.skills.strength++;
+      if (ev.includes("удача")) state.skills.luck++;
+      if (ev.includes("скорость")) state.skills.speed++;
+    }
+
+    // === ЧАСТИЦЫ ===
+    function createParticles(x, y, text) {
+      for (let i = 0; i < 5; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.textContent = text;
+        p.style.left = (x * 54 + 25 + (Math.random() - 0.5) * 30) + 'px';
+        p.style.top = (y * 54 + 25 + (Math.random() - 0.5) * 30) + 'px';
+        mapEl.appendChild(p);
+        setTimeout(() => p.remove(), 1000);
+      }
+    }
+
+    // === СТАТЫ И ХОД ===
     function updateStats() {
       dayEl.textContent = state.day;
-      healthEl.style.width = state.health + '%';
+      healthEl.style.width = Math.max(0, state.health) + '%';
       hungerEl.style.width = state.hunger + '%';
       fatigueEl.style.width = state.fatigue + '%';
     }
 
+    function nextTurn() {
+      state.hunger = Math.min(100, state.hunger + 18);
+      state.fatigue = Math.min(100, state.fatigue + 12);
+      if (state.hunger > 100) { state.health -= 25; state.hunger = 100; log("Голод! -25 здоровья"); }
+      if (state.fatigue > 100) { state.health -= 20; state.fatigue = 100; log("Усталость! -20 здоровья"); }
+      if (state.health <= 0) gameOver();
+      updateStats();
+      saveGame();
+    }
+
     function log(msg) {
-      const entry = document.createElement('div');
-      entry.textContent = `[День ${state.day}] ${msg}`;
-      logEl.appendChild(entry);
+      const div = document.createElement('div');
+      div.textContent = `[День ${state.day}] ${msg}`;
+      logEl.appendChild(div);
       logEl.scrollTop = logEl.scrollHeight;
     }
 
-    function nextTurn() {
-      state.hunger += 15;
-      state.fatigue += 10;
-      if (state.hunger > 100) { state.health -= 20; log("Голод! -20 здоровья"); state.hunger = 100; }
-      if (state.fatigue > 100) { state.health -= 15; log("Усталость! -15 здоровья"); state.fatigue = 100; }
-      if (state.health <= 0) { gameOver(); return; }
-
-      if (state.hunger > 80 || state.fatigue > 80) {
-        document.getElementById('explore').disabled = true;
-      } else {
-        document.getElementById('explore').disabled = false;
-      }
-
-      updateStats();
-      saveGame();
-      if (Math.random() < 0.1) randomEvent();
-    }
-
-    function randomEvent() {
-      const events = ["Нашли тайник! +5 еды", "Буря! +20 усталости", "Друг! +30 здоровья"];
-      const ev = events[Math.floor(Math.random() * events.length)];
-      log("Случайное событие: " + ev);
-      if (ev.includes("еда")) state.food += 5;
-      if (ev.includes("усталости")) state.fatigue += 20;
-      if (ev.includes("здоровья")) state.health += 30;
-    }
-
     // === ДЕЙСТВИЯ ===
-    document.getElementById('rest').onclick = () => {
-      state.fatigue = Math.max(0, state.fatigue - 40);
-      log("Отдых: -40 усталости");
-      nextTurn();
-    };
-
+    document.getElementById('rest').onclick = () => { state.fatigue = Math.max(0, state.fatigue - 50); log("Отдых: -50 усталости"); nextTurn(); };
     document.getElementById('eat').onclick = () => {
-      if (state.food > 0) {
-        state.food--;
-        state.hunger = Math.max(0, state.hunger - 50);
-        log("Съели еду: -50 голода");
-        nextTurn();
-      } else log("Нет еды!");
+      if (state.food > 0) { state.food--; state.hunger = Math.max(0, state.hunger - 60); log("Съели еду"); nextTurn(); }
+      else log("Нет еды!");
     };
-
     document.getElementById('explore').onclick = () => {
       const idx = state.position.y * MAP_SIZE + state.position.x;
-      if (state.visited.has(idx)) {
-        log("Уже исследовано!");
-      } else {
-        state.visited.add(idx);
-        exploreCell(CELLS[idx]);
-        renderMap();
-      }
+      if (state.visited.has(idx)) log("Уже исследовано!");
+      else { state.visited.add(idx); exploreCell(state.map[idx]); renderMap(); }
       nextTurn();
     };
+
+    // === КНОПКИ КАРТЫ И НАСТРОЕК ===
+    document.getElementById('openMap').onclick = () => { mapContainer.style.display = 'block'; renderMap(); };
+    document.getElementById('closeMap').onclick = () => { mapContainer.style.display = 'none'; };
+    document.getElementById('openSettings').onclick = () => { settingsMenu.style.display = 'block'; };
+    document.getElementById('closeSettings').onclick = () => { settingsMenu.style.display = 'none'; };
+    document.getElementById('resetGame').onclick = () => { if (confirm("Сбросить прогресс?")) { localStorage.removeItem('survivor_save'); location.reload(); } };
+    document.getElementById('shareRecord').onclick = () => { Telegram.WebApp.shareScore?.() || alert(`Я выжил ${state.day} дней!`); };
 
     // === СОХРАНЕНИЕ ===
     function saveGame() {
@@ -232,26 +288,28 @@
         const data = JSON.parse(saved);
         Object.assign(state, data);
         state.visited = new Set(data.visited || []);
+      } else {
+        generateMap();
       }
     }
 
     function gameOver() {
       log(`ИГРА ОКОНЧЕНА! Выжили ${state.day} дней.`);
-      alert(`Выжили ${state.day} дней! Рекорд отправлен.`);
+      alert(`Выжили ${state.day} дней!`);
       localStorage.removeItem('survivor_save');
-      Telegram.WebApp.sendData(`survived:${state.day}`);
       setTimeout(() => location.reload(), 3000);
     }
 
     // === СТАРТ ===
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
-    Telegram.WebApp.MainButton.setText('Поделиться выживанием').show().onClick(() => {
+    Telegram.WebApp.MainButton.setText('Поделиться').show().onClick(() => {
       Telegram.WebApp.shareScore?.() || alert(`Я выжил ${state.day} дней в пост-апоке!`);
     });
 
-    init();
-    setInterval(() => { state.day++; log(`Новый день: ${state.day}`); nextTurn(); }, 30000); // Новый день каждые 30 сек
+    loadGame();
+    updateStats();
+    setInterval(() => { state.day++; log(`Новый день: ${state.day}`); nextTurn(); }, 45000); // 45 сек = 1 день
   </script>
 </body>
 </html>
