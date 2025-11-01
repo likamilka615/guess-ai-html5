@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Угадай ИИ</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://js.puter.com/v2/"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;text-align:center;padding:20px;min-height:100vh}
     h1{margin:15px 0;font-size:1.8em}
-    #img{width:280px;height:280px;margin:20px auto;border-radius:20px;overflow:hidden;box-shadow:0 15px 30px rgba(0,0,0,.3)}
+    #img{width:280px;height:280px;margin:20px auto;border-radius:20px;overflow:hidden;box-shadow:0 15px 30px rgba(0,0,0,.3);background:#000}
     #img img{width:100%;height:100%;object-fit:contain}
     .opt{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:25px auto;max-width:320px}
     .btn{padding:16px;background:rgba(255,255,255,.15);border:2px solid transparent;border-radius:16px;font-size:1em;transition:.3s;backdrop-filter:blur(10px)}
@@ -18,54 +19,64 @@
     #score,#streak{font-weight:bold;margin:10px 0}
     #score{font-size:1.5em}
     #streak{font-size:1.2em;color:#fbbf24}
+    #load{color:#fbbf24;font-size:1.1em;margin:10px}
   </style>
 </head>
 <body>
   <h1>УГАДАЙ, ЧТО НАРИСОВАЛ ИИ!</h1>
   <div id="score">Счёт: 0</div>
   <div id="streak">Серия: 0</div>
-  <div id="img"><img id="ai" src="" alt=""></div>
+  <div id="load">Генерирую ИИ-картинку...</div>
+  <div id="img"><img id="ai" src="" alt="ИИ-картинка"></div>
   <div class="opt" id="opts"></div>
 
   <script>
-    // === 20+ УНИКАЛЬНЫХ ПРОМПТОВ + SVG ===
-    const data = [
-      {t:"кот в скафандре на Луне",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE0MCIgY3k9IjEwMCIgcj0iNDAiIGZpbGw9IndoaXRlIi8+PGNpcmNsZSBjeD0iMTEwIiBjeT0iODUiIHI9IjUiIGZpbGw9ImJsYWNrIi8+PGNpcmNsZSBjeD0iMTcwIiBjeT0iODUiIHI9IjUiIGZpbGw9ImJsYWNrIi8+PHBhdGggZD0iTTEwMCAxMjAgTDIwMCAxMjAiIHN0cm9rZT0iZ3JlZW4iIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjE0MCIgeT0iMjUwIiBmaWxsPSJ5ZWxsb3ciIGZvbnQtc2l6ZT0iMTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkxVTkEgQ09UPC90ZXh0Pjwvc3ZnPg=='},
-      {t:"пицца с глазами и ногами",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxNDAiIHI9IjgwIiBmaWxsPSJ5ZWxsb3ciLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSIxMjAiIHI9IjEwIiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE2MCIgY3k9IjEyMCIgcj0iMTAiIGZpbGw9ImJsYWNrIi8+PHJlY3QgeD0iMTEwIiB5PSIxODAiIHdpZHRoPSI2MCIgaGVpZ2h0PSIyMCIgZmlsbD0iYnJvd24iLz48cmVjdCB4PSIxNjAiIHk9IjE4MCIgd2lkdGg9IjYwIiBoZWpnaHQ9IjIwIiBmaWxsPSJicm93biIvPjx0ZXh0IHg9IjE0MCIgeT0iMjUwIiBmaWxsPSJyZWQiIGZvbnQtc2l6ZT0iMTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlBJWlpBPC90ZXh0Pjwvc3ZnPg=='},
-      {t:"динозавр на самокате",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJncmVlbiIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjIwMCIgcj0iMjAiIGZpbGw9ImdyYXkiLz48Y2lyY2xlIGN4PSIxODAiIGN5PSIyMDAiIHI9IjIwIiBmaWxsPSJncmF5Ii8+PHBhdGggZD0iTTUwIDE1MCBRMTAwIDEyMCAxNTAgMTUwIiBzdHJva2U9ImJsdWUiIHN0cm9rZS13aWR0aD0iNSIvPjx0ZXh0IHg9IjE0MCIgeT0iMjUwIiBmaWxsPSJibGFjayIgZm9udC1zaXplPSIxNSI+RklOTyBPTiBQQVRBPC90ZXh0Pjwvc3ZnPg=='},
-      {t:"ёжик играет на гитаре",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxMDAiIHI9IjQwIiBmaWxsPSJicm93biIvPjxjaXJjbGUgY3g9IjExMCIgY3k9IjgwIiByPSIyIiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE3MCIgY3k9IjgwIiByPSIyIiBmaWxsPSJibGFjayIvPjxyZWN0IHg9IjE1MCIgeT0iMTUwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjIwIiBmaWxsPSJibHVlIi8+PHRleHQgeD0iMTQwIiB5PSIyNTAiIGZpbGw9ImJyb3duIiBmb250LXNpemU9IjE1Ij5IRURHRUhPRyBHVUlUQVJFPHRleHQ+PC9zdmc+=='},
-      {t:"робот пьёт кофе",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSI5MCIgeT0iNjAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTUwIiBmaWxsPSJzaWx2ZXIiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSIxMDAiIHI9IjIwIiBmaWxsPSJibHVlIi8+PGNpcmNsZSBjeD0iMTYwIiBjeT0iMTAwIiByPSIyMCIgZmlsbD0iYmx1ZSIvPjxyZWN0IHg9IjEzMCIgeT0iMTUwIiB3aWR0aD0iNDAiIGhlaWdodD0iNTAiIGZpbGw9ImJyb3duIi8+PHRleHQgeD0iMTQwIiB5PSIyNTAiIGZpbGw9ImJsYWNrIiBmb250LXNpemU9IjE1Ij5ST0JPVCAoYWJzdHJhY3QpPC90ZXh0Pjwvc3ZnPg=='},
-      {t:"медведь в костюме супермена",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxMDAiIHI9IjUwIiBmaWxsPSJicm93biIvPjxjaXJjbGUgY3g9IjExMCIgY3k9IjgwIiByPSI1IiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE3MCIgY3k9IjgwIiByPSI1IiBmaWxsPSJibGFjayIvPjxyZWN0IHg9IjEwMCIgeT0iMTUwIiB3aWR0aD0iODAiIGhlaWdodD0iMTAwIiBmaWxsPSJyZWQiLz48dGV4dCB4PSIxNDAiIHk9IjI1MCIgZmlsbD0icmVkIiBmb250LXNpemU9IjE1Ij5CRUFSIFNVUEVSTUFORDwvdGV4dD48L3N2Zz4='},
-      {t:"слон танцует балет",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxMDAiIHI9IjYwIiBmaWxsPSJncmF5Ii8+PGNpcmNsZSBjeD0iMTEwIiBjeT0iODAiIHI9IjUiIGZpbGw9ImJsYWNrIi8+PGNpcmNsZSBjeD0iMTcwIiBjeT0iODAiIHI9IjUiIGZpbGw9ImJsYWNrIi8+PHJlY3QgeD0iMTAwIiB5PSIxNjAiIHdpZHRoPSIxMDAiIGhlaWdodD0iNDAiIGZpbGw9InBpbmsiLz48dGV4dCB4PSIxNDAiIHk9IjI1MCIgZmlsbD0icGluayIgZm9udC1zaXplPSIxNSI+RUxFUEhBTlQgQkFMTEVUJGN4PjwvdGV4dD48L3N2Zz4='},
-      {t:"авокадо с короной",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxNDAiIHI9IjYwIiBmaWxsPSJncmVlbiIvPjxjaXJjbGUgY3g9IjE0MCIgY3k9IjEwMCIgcj0iMjAiIGZpbGw9ImJyb3duIi8+PHBvbHlnb24gcG9pbnRzPSIxMzAsMTIwIDE0MCwxMDAgMTUwLDEyMCIgZmlsbD0ieWVsbG93Ii8+PHRleHQgeD0iMTQwIiB5PSIyNTAiIGZpbGw9InllbGxvdyIgZm9udC1zaXplPSIxNSI+QVZPQ0FETyBLSU5HPC90ZXh0Pjwvc3ZnPg=='},
-      {t:"книга летает",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSIxMDAiIHk9IjEwMCIgd2lkdGg9IjgwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iYmx1ZSIvPjxwYXRoIGQ9Ik0xMDAgMTAwIEwxMjAgODAgTDE0MCAxMDAiIHN0cm9rZT0ieWVsbG93IiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSIxNDAiIHk9IjI1MCIgZmlsbD0ieWVsbG93IiBmb250LXNpemU9IjE1Ij5CTE9PSyBGTFlFUzwvdGV4dD48L3N2Zz4='},
-      {t:"тост дерётся на мечах",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSIxMDAiIHk9IjEyMCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjQwIiBmaWxsPSJicm93biIvPjxyZWN0IHg9IjE2MCIgeT0iMTIwIiB3aWR0aD0iNjAiIGhlaWdodD0iNDAiIGZpbGw9ImJyb3duIi8+PHBhdGggZD0iTTEyMCAxMjAgTDExMCAxMDAgTDEyMCA4MCIgc3Ryb2tlPSJzaWx2ZXIiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xNjAgMTIwIEwxNzAgMTAwIDE2MCA4MCIgc3Ryb2tlPSJzaWx2ZXIiIHN0cm9rZS13aWR0aD0iMyIvPjx0ZXh0IHg9IjE0MCIgeT0iMjUwIiBmaWxsPSJzaWx2ZXIiIGZvbnQtc2l6ZT0iMTUiPlRPUVNUIERVRUw8L3RleHQ+PC9zdmc+=='}
+    const prompts = [
+      "кот в скафандре на Луне",
+      "пицца с глазами и ногами",
+      "динозавр на самокате",
+      "ёжик играет на гитаре",
+      "робот пьёт кофе",
+      "медведь в костюме супермена",
+      "слон танцует балет",
+      "авокадо с короной",
+      "книга летает",
+      "тост дерётся на мечах"
     ];
 
     let cur, score = 0, streak = 0, used = [];
+    const ai = document.getElementById('ai');
+    const opts = document.getElementById('opts');
+    const sc = document.getElementById('score');
+    const st = document.getElementById('streak');
+    const load = document.getElementById('load');
 
-    const ai = document.getElementById('ai'),
-          opts = document.getElementById('opts'),
-          sc = document.getElementById('score'),
-          st = document.getElementById('streak');
+    async function genImage(prompt) {
+      load.style.display = "block";
+      try {
+        const img = await puter.ai.txt2img(prompt, { model: "gpt-image-1" });
+        ai.src = img;
+      } catch (e) {
+        ai.src = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJibGFjayIvPjx0ZXh0IHg9IjE0MCIgeT0iMTQwIiBmaWxsPSJ5ZWxsb3ciIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPj8/PC90ZXh0Pjwvc3ZnPg==`;
+      }
+      load.style.display = "none";
+    }
 
-    function next() {
-      // НЕ ПОВТОРЯЕТСЯ
-      if (used.length === data.length) used = [];
-      do { cur = data[Math.floor(Math.random() * data.length)]; }
-      while (used.includes(cur));
+    async function next() {
+      if (used.length === prompts.length) used = [];
+      do { cur = prompts[Math.floor(Math.random() * prompts.length)]; } while (used.includes(cur));
       used.push(cur);
 
-      ai.src = 'data:image/svg+xml;base64,' + cur.s;
+      await genImage(cur);
 
-      const wrong = data.filter(x => x !== cur);
+      const wrong = prompts.filter(x => x !== cur);
       const arr = [cur, ...wrong.sort(() => .5 - Math.random()).slice(0,3)].sort(() => .5 - Math.random());
 
       opts.innerHTML = '';
       arr.forEach(o => {
         const b = document.createElement('div');
         b.className = 'btn';
-        b.textContent = o.t;
+        b.textContent = o;
         b.onclick = () => choose(o === cur, b);
         opts.appendChild(b);
       });
@@ -88,7 +99,8 @@
       Telegram.WebApp.shareScore?.() || navigator.share?.({text: txt}) || alert(txt);
     }
 
-    Telegram.WebApp.ready(); Telegram.WebApp.expand();
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
     Telegram.WebApp.MainButton.setText('Поделиться счётом').show().onClick(share);
     next();
   </script>
