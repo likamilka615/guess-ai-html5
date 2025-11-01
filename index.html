@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Угадай ИИ</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-align: center;
+      padding: 20px;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    h1 { margin: 15px 0; font-size: 1.8em; }
+    #imageContainer {
+      width: 280px; height: 280px;
+      margin: 20px auto;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+      background: #000;
+    }
+    #aiImage {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 25px auto;
+      max-width: 320px;
+    }
+    .option {
+      padding: 16px;
+      background: rgba(255,255,255,0.15);
+      border: 2px solid transparent;
+      border-radius: 16px;
+      font-size: 1em;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+    }
+    .option.correct {
+      background: #4ade80 !important;
+      border-color: #22c55e;
+      transform: scale(1.05);
+    }
+    .option.wrong {
+      background: #ef4444 !important;
+      border-color: #dc2626;
+    }
+    #score {
+      font-size: 1.5em;
+      margin: 15px 0;
+      font-weight: bold;
+    }
+    #streak {
+      font-size: 1.2em;
+      color: #fbbf24;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>УГАДАЙ, ЧТО НАРИСОВАЛ ИИ!</h1>
+  <div id="score">Счёт: 0</div>
+  <div id="streak">Серия: 0</div>
+
+  <div id="imageContainer">
+    <img id="aiImage" src="" alt="ИИ-картинка">
+  </div>
+
+  <div class="options" id="options"></div>
+
+  <div id="result" class="hidden"></div>
+
+  <script>
+    // === ДАННЫЕ ИГРЫ ===
+    const prompts = [
+      { text: "кот в скафандре на Луне", img: "https://i.imgur.com/8hA7K.jpg" },
+      { text: "пицца с глазами и ногами", img: "https://picsum.photos/300/300?random=1" },
+      { text: "динозавр на самокате в офисе", img: "https://picsum.photos/300/300?random=2" },
+      { text: "ёжик играет на гитаре", img: "https://picsum.photos/300/300?random=3" },
+      { text: "робот пьёт кофе в кафе", img: "https://picsum.photos/300/300?random=4" },
+      { text: "медведь в костюме супермена", img: "https://picsum.photos/300/300?random=5" }
+    ];
+
+    let currentRound = null;
+    let score = 0;
+    let streak = 0;
+
+    const imageEl = document.getElementById('aiImage');
+    const optionsEl = document.getElementById('options');
+    const scoreEl = document.getElementById('score');
+    const streakEl = document.getElementById('streak');
+
+    // === СТАРТ ===
+    function startGame() {
+      nextRound();
+      Telegram.WebApp.ready();
+      Telegram.WebApp.expand();
+
+      // Кнопка "Поделиться"
+      Telegram.WebApp.MainButton.setText('Поделиться счётом');
+      Telegram.WebApp.MainButton.show();
+      Telegram.WebApp.MainButton.onClick(shareScore);
+    }
+
+    function nextRound() {
+      currentRound = prompts[Math.floor(Math.random() * prompts.length)];
+      const wrong = prompts.filter(p => p !== currentRound);
+      const options = [currentRound, ...wrong.sort(() => 0.5 - Math.random()).slice(0,3)];
+      options.sort(() => 0.5 - Math.random());
+
+      imageEl.src = currentRound.img;
+      optionsEl.innerHTML = '';
+
+      options.forEach((opt, i) => {
+        const btn = document.createElement('div');
+        btn.className = 'option';
+        btn.textContent = opt.text;
+        btn.onclick = () => selectAnswer(opt, btn);
+        optionsEl.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(selected, btn) {
+      const isCorrect = selected === currentRound;
+      
+      // Блокировка кнопок
+      document.querySelectorAll('.option').forEach(b => b.style.pointerEvents = 'none');
+
+      if (isCorrect) {
+        btn.classList.add('correct');
+        score += 10;
+        streak++;
+        playSound('correct');
+        Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+      } else {
+        btn.classList.add('wrong');
+        streak = 0;
+        playSound('wrong');
+        Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+      }
+
+      updateScore();
+      setTimeout(() => {
+        if (isCorrect && streak % 5 === 0) {
+          showBonus();
+        } else {
+          nextRound();
+        }
+      }, 1500);
+    }
+
+    function updateScore() {
+      scoreEl.textContent = `Счёт: ${score}`;
+      streakEl.textContent = `Серия: ${streak} 🔥`;
+    }
+
+    function showBonus() {
+      alert(`БОНУС! +50 за серию ${streak}!`);
+      score += 50;
+      updateScore();
+      nextRound();
+    }
+
+    function shareScore() {
+      const text = `Я угадал ${score} ИИ-картинок! 🔥\nСерия: ${streak}\nПобей меня в @guess_ai_game_bot!`;
+      Telegram.WebApp.shareScore?.() || navigator.share?.({ text }) || alert(text);
+    }
+
+    function playSound(type) {
+      const audio = new Audio();
+      audio.volume = 0.3;
+      if (type === 'correct') {
+        audio.src = 'https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3';
+      } else {
+        audio.src = 'https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-383.mp3';
+      }
+      audio.play().catch(() => {});
+    }
+
+    // Запуск
+    startGame();
+  </script>
+</body>
+</html>
