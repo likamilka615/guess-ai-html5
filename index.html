@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Угадай ИИ</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://js.puter.com/v2/"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;text-align:center;padding:20px;min-height:100vh}
@@ -26,7 +25,7 @@
   <h1>УГАДАЙ, ЧТО НАРИСОВАЛ ИИ!</h1>
   <div id="score">Счёт: 0</div>
   <div id="streak">Серия: 0</div>
-  <div id="load">Генерирую ИИ-картинку...</div>
+  <div id="load">Ищу ИИ-картинку...</div>
   <div id="img"><img id="ai" src="" alt="ИИ-картинка"></div>
   <div class="opt" id="opts"></div>
 
@@ -44,24 +43,38 @@
       "тост дерётся на мечах"
     ];
 
-    let cur, score = 0, streak = 0, used = [];
+    let cur, score = 0, streak = 0, used = [], cache = {};
     const ai = document.getElementById('ai');
     const opts = document.getElementById('opts');
     const sc = document.getElementById('score');
     const st = document.getElementById('streak');
     const load = document.getElementById('load');
 
+    // === ПОИСК КАРТИНКИ НА LEXICA (БЕСПЛАТНО, БЕЗ КЛЮЧЕЙ) ===
     async function genImage(prompt) {
       load.style.display = "block";
+
+      if (cache[prompt]) {
+        ai.src = cache[prompt];
+        load.style.display = "none";
+        return;
+      }
+
       try {
-        const img = await puter.ai.txt2img(prompt, { model: "gpt-image-1" });
+        const res = await fetch(`https://lexica.art/api/v1/search?q=${encodeURIComponent(prompt)}`, {
+          headers: { 'User-Agent': 'Mozilla/5.0' }
+        });
+        const data = await res.json();
+        const img = data.images?.[0]?.src || `https://via.placeholder.com/280/7c3aed/fff?text=${encodeURIComponent(prompt)}`;
+        cache[prompt] = img;
         ai.src = img;
       } catch (e) {
-        ai.src = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJibGFjayIvPjx0ZXh0IHg9IjE0MCIgeT0iMTQwIiBmaWxsPSJ5ZWxsb3ciIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPj8/PC90ZXh0Pjwvc3ZnPg==`;
+        ai.src = `https://via.placeholder.com/280/7c3aed/fff?text=${encodeURIComponent(prompt)}`;
       }
       load.style.display = "none";
     }
 
+    // === НОВЫЙ РАУНД ===
     async function next() {
       if (used.length === prompts.length) used = [];
       do { cur = prompts[Math.floor(Math.random() * prompts.length)]; } while (used.includes(cur));
