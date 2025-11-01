@@ -3,313 +3,270 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Выживальщик: Пост-Апок</title>
+  <title>Post-Apoc Hamster</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #0f0; text-align: center; padding: 10px; min-height: 100vh; overflow: hidden; }
-    h1 { font-size: 1.6em; margin: 10px 0; text-shadow: 0 0 8px #0f0; animation: glow 2s infinite alternate; }
-    @keyframes glow { from { text-shadow: 0 0 5px #0f0; } to { text-shadow: 0 0 15px #0f0; } }
+    body { 
+      font-family: 'Segoe UI', sans-serif; 
+      background: linear-gradient(135deg, #1a1a2e, #16213e); 
+      color: #fff; 
+      text-align: center; 
+      padding: 15px; 
+      min-height: 100vh; 
+      overflow: hidden;
+    }
+    h1 { 
+      font-size: 1.8em; 
+      margin: 10px 0; 
+      background: linear-gradient(45deg, #ffd700, #ff6b6b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: titleGlow 2s infinite;
+    }
+    @keyframes titleGlow { 0%,100% { filter: drop-shadow(0 0 10px #ffd700); } 50% { filter: drop-shadow(0 0 20px #ff6b6b); } }
 
     /* === СТАТЫ === */
-    #stats { display: flex; justify-content: space-around; margin: 10px 0; font-size: 0.9em; }
-    .bar { width: 60px; height: 8px; background: #222; border: 1px solid #0f0; margin-top: 3px; }
-    .fill { height: 100%; transition: width 0.4s ease; }
-    #health .fill { background: #f00; }
-    #hunger .fill { background: #ff0; }
-    #fatigue .fill { background: #0ff; }
-
-    /* === КНОПКИ === */
-    .btn { margin: 8px; padding: 12px 16px; background: #003300; color: #0f0; border: 1px solid #0f0; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
-    .btn:active { transform: scale(0.95); box-shadow: 0 0 15px #0f0; }
-
-    /* === КАРТА === */
-    #mapContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; z-index: 100; padding: 20px; }
-    #map { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; width: 320px; margin: 40px auto; transform: scale(0.9); transition: transform 0.3s; }
-    #map.zoom { transform: scale(1.1); }
-    .cell { width: 50px; height: 50px; background: #111; border: 1px solid #0f0; font-size: 1.8em; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; }
-    .cell:hover { background: #003300; transform: scale(1.1); box-shadow: 0 0 10px #0f0; }
-    .cell.visited { background: #002200; opacity: 0.7; }
-    .cell.selected { border: 3px solid #ff0; box-shadow: 0 0 20px #ff0; animation: pulse 1s infinite; }
-    @keyframes pulse { 0%, 100% { box-shadow: 0 0 10px #ff0; } 50% { box-shadow: 0 0 25px #ff0; } }
+    #stats { 
+      display: flex; 
+      justify-content: space-around; 
+      background: rgba(255,255,255,0.1); 
+      padding: 12px; 
+      border-radius: 16px; 
+      margin: 10px 0;
+      backdrop-filter: blur(10px);
+    }
+    .stat { font-size: 0.9em; }
+    .bar { width: 70px; height: 10px; background: #333; border-radius: 5px; margin-top: 4px; overflow: hidden; }
+    .fill { height: 100%; border-radius: 5px; transition: width 0.3s ease; }
+    #health .fill { background: linear-gradient(90deg, #ff4757, #ff6b6b); }
+    #hunger .fill { background: linear-gradient(90deg, #ffa502, #ff6b6b); }
+    #fatigue .fill { background: linear-gradient(90deg, #1e90ff, #00d2ff); }
 
     /* === ПЕРСОНАЖ === */
-    #character { position: absolute; font-size: 2em; pointer-events: none; transition: all 0.4s ease; z-index: 10; }
-    #character::after { content: ''; position: absolute; top: -10px; left: -10px; width: 60px; height: 60px; background: radial-gradient(circle, #0f0 10%, transparent 70%); opacity: 0.5; border-radius: 50%; animation: aura 2s infinite; }
-    @keyframes aura { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.3); opacity: 0.3; } }
+    #characterContainer { 
+      position: relative; 
+      width: 150px; 
+      height: 150px; 
+      margin: 20px auto; 
+      cursor: pointer; 
+    }
+    #character { 
+      font-size: 6em; 
+      filter: drop-shadow(0 0 15px #ffd700);
+      animation: idle 2s infinite;
+      user-select: none;
+    }
+    @keyframes idle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .coin { 
+      position: absolute; 
+      font-size: 1.5em; 
+      pointer-events: none; 
+      animation: coinFly 1s forwards; 
+      color: #ffd700;
+      text-shadow: 0 0 10px #ffd700;
+    }
+    @keyframes coinFly { 
+      0% { transform: translateY(0) scale(1); opacity: 1; } 
+      100% { transform: translateY(-100px) scale(0.5); opacity: 0; } 
+    }
 
-    /* === ЛОГ === */
-    #log { height: 90px; overflow-y: auto; background: #111; padding: 10px; margin: 10px 0; font-size: 0.85em; text-align: left; border: 1px solid #0f0; border-radius: 8px; }
+    /* === КАРТОЧКИ === */
+    .card { 
+      background: rgba(255,255,255,0.1); 
+      border-radius: 16px; 
+      padding: 15px; 
+      margin: 10px 0; 
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .btn { 
+      background: linear-gradient(45deg, #ffd700, #ff6b6b); 
+      color: #000; 
+      border: none; 
+      padding: 14px; 
+      margin: 8px; 
+      border-radius: 12px; 
+      font-weight: bold; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      min-width: 120px;
+    }
+    .btn:active { transform: scale(0.95); box-shadow: 0 0 20px #ffd700; }
 
-    /* === МЕНЮ НАСТРОЕК === */
-    #settingsMenu { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; z-index: 200; padding: 20px; }
-    #settingsMenu h2 { color: #0ff; margin-bottom: 20px; }
-    .setting { margin: 15px 0; text-align: left; }
-    .setting label { display: block; margin-bottom: 5px; }
+    /* === КАРТА === */
+    #mapContainer { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: rgba(0,0,0,0.95); display: none; z-index: 100; padding: 20px; 
+      overflow: auto;
+    }
+    #map { 
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; 
+      width: 300px; margin: 50px auto; 
+    }
+    .cell { 
+      width: 55px; height: 55px; 
+      background: linear-gradient(135deg, #333, #222); 
+      border-radius: 12px; 
+      font-size: 1.8em; 
+      display: flex; align-items: center; justify-content: center; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+    .cell:hover { transform: scale(1.1); box-shadow: 0 0 15px #ffd700; }
+    .cell.selected { border: 3px solid #ffd700; animation: pulse 1s infinite; }
 
-    /* === ЧАСТИЦЫ === */
-    .particle { position: absolute; font-size: 1.5em; pointer-events: none; animation: float 1s forwards; opacity: 0; }
-    @keyframes float { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-50px); opacity: 0; } }
+    /* === УЛУЧШЕНИЯ === */
+    .upgrade { 
+      display: flex; justify-content: space-between; align-items: center; 
+      background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin: 8px 0;
+    }
+    .upgrade button { background: #00d2ff; color: #000; padding: 8px 12px; border-radius: 8px; font-size: 0.8em; }
+
+    /* === ЗВУКИ === */
+    .hidden { display: none; }
   </style>
 </head>
 <body>
 
-  <h1>ВЫЖИВАЛЬЩИК: ПОСТ-АПОК</h1>
+  <h1>POST-APOC HAMSTER</h1>
 
   <!-- СТАТЫ -->
   <div id="stats">
-    <div>День: <span id="day">1</span></div>
-    <div>Здоровье: <div class="bar"><div id="health" class="fill" style="width:100%"></div></div></div>
-    <div>Голод: <div class="bar"><div id="hunger" class="fill" style="width:0%"></div></div></div>
-    <div>Усталость: <div class="bar"><div id="fatigue" class="fill" style="width:0%"></div></div></div>
+    <div class="stat">День: <span id="day">1</span></div>
+    <div class="stat">TON: <span id="ton">0</span></div>
+    <div class="stat">Уровень: <span id="level">1</span></div>
   </div>
 
-  <!-- ОСНОВНЫЕ КНОПКИ -->
+  <!-- ПЕРСОНАЖ -->
+  <div id="characterContainer" onclick="clickCharacter()">
+    <div id="character">Hamster</div>
+  </div>
+
+  <!-- ПРОКАЧКА -->
+  <div class="card">
+    <h3>ПРОКАЧКА</h3>
+    <div class="upgrade">
+      <span>Сила атаки: <span id="power">1</span></span>
+      <button onclick="upgrade('power', 100)">+1 (100 TON)</button>
+    </div>
+    <div class="upgrade">
+      <span>Скорость: <span id="speed">1</span></span>
+      <button onclick="upgrade('speed', 150)">+1 (150 TON)</button>
+    </div>
+  </div>
+
+  <!-- КНОПКИ -->
   <div>
-    <button class="btn" id="openMap">Открыть Карту</button>
-    <button class="btn" id="openSettings">Настройки</button>
+    <button class="btn" id="openMap">Карта</button>
+    <button class="btn" id="openShop">Магазин</button>
   </div>
 
-  <!-- ЛОГ -->
-  <div id="log">Игра началась. Вы в безопасности... пока.</div>
-
-  <!-- ДЕЙСТВИЯ -->
-  <div id="actions">
-    <button class="btn" id="rest">Отдыхать</button>
-    <button class="btn" id="eat">Съесть еду</button>
-    <button class="btn" id="explore">Исследовать</button>
-  </div>
-
-  <!-- КАРТА (скрытая) -->
+  <!-- КАРТА -->
   <div id="mapContainer">
-    <button class="btn" style="position:absolute; top:10px; right:10px;" id="closeMap">Закрыть</button>
+    <button class="btn" style="position:absolute;top:10px;right:10px;" id="closeMap">Закрыть</button>
     <h2>КАРТА МИРА</h2>
-    <div style="position:relative; width:320px; height:320px; margin:0 auto;">
-      <div id="map"></div>
-      <div id="character">Person</div>
-    </div>
+    <div id="map"></div>
   </div>
 
-  <!-- МЕНЮ НАСТРОЕК -->
-  <div id="settingsMenu">
-    <button class="btn" style="position:absolute; top:10px; right:10px;" id="closeSettings">Закрыть</button>
-    <h2>НАСТРОЙКИ</h2>
-    <div class="setting">
-      <label>Громкость эффектов: <input type="range" id="volume" min="0" max="100" value="70"></label>
-    </div>
-    <div class="setting">
-      <label>Тема: 
-        <select id="theme">
-          <option value="dark">Тёмная</option>
-          <option value="neon">Неон</option>
-        </select>
-      </label>
-    </div>
-    <div class="setting">
-      <button class="btn" id="resetGame">Сбросить прогресс</button>
-    </div>
-    <div class="setting">
-      <button class="btn" id="shareRecord">Поделиться рекордом</button>
-    </div>
-  </div>
+  <!-- АУДИО -->
+  <audio id="clickSound" class="hidden" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3"></audio>
+  <audio id="levelSound" class="hidden" src="https://assets.mixkit.co/sfx/preview/mixkit-level-up-achievement-2070.mp3"></audio>
 
   <script>
-    // === ДАННЫЕ ===
-    const MAP_SIZE = 6;
-    const CELL_TYPES = ['Forest', 'City', 'Cave', 'Ruins', 'Lake', 'Wasteland'];
-    const CELL_ICONS = { Forest: 'Tree', City: 'Building', Cave: 'Mountain', Ruins: 'Castle', Lake: 'Droplet', Wasteland: 'Skull' };
-
-    let state = {
-      day: 1,
-      health: 100,
-      hunger: 0,
-      fatigue: 0,
-      food: 5,
-      water: 5,
-      position: { x: 2, y: 2 },
-      visited: new Set(),
-      skills: { strength: 1, luck: 1, speed: 2 },
-      map: []
-    };
-
-    // === ЭЛЕМЕНТЫ ===
-    const mapContainer = document.getElementById('mapContainer');
-    const mapEl = document.getElementById('map');
-    const charEl = document.getElementById('character');
-    const logEl = document.getElementById('log');
+    let state = { ton: 0, day: 1, level: 1, power: 1, speed: 1, position: {x:2,y:2} };
+    const tonEl = document.getElementById('ton');
     const dayEl = document.getElementById('day');
-    const healthEl = document.getElementById('health');
-    const hungerEl = document.getElementById('hunger');
-    const fatigueEl = document.getElementById('fatigue');
-    const settingsMenu = document.getElementById('settingsMenu');
+    const levelEl = document.getElementById('level');
+    const clickSound = document.getElementById('clickSound');
+    const levelSound = document.getElementById('levelSound');
 
-    // === ИНИЦИАЛИЗАЦИЯ КАРТЫ ===
-    function generateMap() {
-      state.map = [];
-      for (let i = 0; i < MAP_SIZE * MAP_SIZE; i++) {
-        state.map.push(CELL_TYPES[Math.floor(Math.random() * CELL_TYPES.length)]);
+    // === КЛИК ПО ХАМСТЕРУ ===
+    function clickCharacter() {
+      state.ton += state.power;
+      tonEl.textContent = state.ton;
+      createCoin();
+      playSound(clickSound);
+      Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+      if (state.ton % 500 === 0) levelUp();
+    }
+
+    function createCoin() {
+      const coin = document.createElement('div');
+      coin.className = 'coin';
+      coin.textContent = 'Coin';
+      coin.style.left = (Math.random() * 100) + 'px';
+      coin.style.top = (Math.random() * 50 + 50) + 'px';
+      document.getElementById('characterContainer').appendChild(coin);
+      setTimeout(() => coin.remove(), 1000);
+    }
+
+    function levelUp() {
+      state.level++;
+      levelEl.textContent = state.level;
+      playSound(levelSound);
+      alert(`УРОВЕНЬ ${state.level}! +1 к силе!`);
+      state.power++;
+    }
+
+    function playSound(audio) {
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    }
+
+    // === ПРОКАЧКА ===
+    function upgrade(type, cost) {
+      if (state.ton >= cost) {
+        state.ton -= cost;
+        state[type]++;
+        document.getElementById(type).textContent = state[type];
+        tonEl.textContent = state.ton;
+      } else {
+        alert("Недостаточно TON!");
       }
     }
 
+    // === КАРТА ===
+    document.getElementById('openMap').onclick = () => {
+      document.getElementById('mapContainer').style.display = 'block';
+      renderMap();
+    };
+    document.getElementById('closeMap').onclick = () => {
+      document.getElementById('mapContainer').style.display = 'none';
+    };
+
     function renderMap() {
-      mapEl.innerHTML = '';
-      for (let y = 0; y < MAP_SIZE; y++) {
-        for (let x = 0; x < MAP_SIZE; x++) {
-          const idx = y * MAP_SIZE + x;
+      const map = document.getElementById('map');
+      map.innerHTML = '';
+      for (let y = 0; y < 5; y++) {
+        for (let x = 0; x < 5; x++) {
           const cell = document.createElement('div');
           cell.className = 'cell';
           if (state.position.x === x && state.position.y === y) cell.classList.add('selected');
-          if (state.visited.has(idx)) cell.classList.add('visited');
-          cell.innerHTML = CELL_ICONS[state.map[idx]];
-          cell.onclick = () => moveTo(x, y);
-          mapEl.appendChild(cell);
+          cell.innerHTML = ['Forest','City','Cave','Ruins','Lake'][Math.floor(Math.random()*5)];
+          cell.onclick = () => {
+            state.position = {x,y};
+            alert(`Перемещение на ${x},${y}!`);
+            renderMap();
+          };
+          map.appendChild(cell);
         }
       }
-      updateCharacter();
-    }
-
-    function updateCharacter() {
-      const cell = mapEl.children[state.position.y * MAP_SIZE + state.position.x];
-      const rect = cell.getBoundingClientRect();
-      const mapRect = mapEl.getBoundingClientRect();
-      charEl.style.left = (rect.left - mapRect.left + 10) + 'px';
-      charEl.style.top = (rect.top - mapRect.top + 5) + 'px';
-    }
-
-    // === ДВИЖЕНИЕ ===
-    function moveTo(x, y) {
-      const dist = Math.abs(x - state.position.x) + Math.abs(y - state.position.y);
-      if (dist > state.skills.speed) {
-        log("Слишком далеко!");
-        return;
-      }
-      state.position = { x, y };
-      state.fatigue += dist * 12;
-      const idx = y * MAP_SIZE + x;
-      if (!state.visited.has(idx)) {
-        state.visited.add(idx);
-        exploreCell(state.map[idx]);
-        createParticles(x, y, 'Dust');
-      }
-      renderMap();
-      nextTurn();
-    }
-
-    // === ИССЛЕДОВАНИЕ ===
-    function exploreCell(type) {
-      const events = {
-        Forest: ["+2 еда", "-15 здоровье (волк)", "-20 усталость"],
-        City: ["+3 еда", "-30 здоровье (зомби)", "+30 здоровье (аптечка)"],
-        Cave: ["+3 вода", "-40 здоровье (обвал)", "+1 сила"],
-        Ruins: ["+1 удача", "-25 здоровье (ловушка)", "+1 скорость"],
-        Lake: ["+3 еда", "-1 еда (утонуло)", "+3 вода"],
-        Wasteland: ["-20 здоровье (радиация)", "+1 скорость", "Пусто"]
-      };
-      const ev = events[type][Math.floor(Math.random() * events[type].length)];
-      log(`Исследовано: ${type} — ${ev}`);
-      // Парсинг эффектов (упрощённо)
-      if (ev.includes("еда")) state.food += parseInt(ev.match(/-?\d+/) || 2);
-      if (ev.includes("вода")) state.water += parseInt(ev.match(/-?\d+/) || 2);
-      if (ev.includes("здоровье")) state.health += parseInt(ev.match(/-?\d+/));
-      if (ev.includes("усталость")) state.fatigue += parseInt(ev.match(/-?\d+/));
-      if (ev.includes("сила")) state.skills.strength++;
-      if (ev.includes("удача")) state.skills.luck++;
-      if (ev.includes("скорость")) state.skills.speed++;
-    }
-
-    // === ЧАСТИЦЫ ===
-    function createParticles(x, y, text) {
-      for (let i = 0; i < 5; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        p.textContent = text;
-        p.style.left = (x * 54 + 25 + (Math.random() - 0.5) * 30) + 'px';
-        p.style.top = (y * 54 + 25 + (Math.random() - 0.5) * 30) + 'px';
-        mapEl.appendChild(p);
-        setTimeout(() => p.remove(), 1000);
-      }
-    }
-
-    // === СТАТЫ И ХОД ===
-    function updateStats() {
-      dayEl.textContent = state.day;
-      healthEl.style.width = Math.max(0, state.health) + '%';
-      hungerEl.style.width = state.hunger + '%';
-      fatigueEl.style.width = state.fatigue + '%';
-    }
-
-    function nextTurn() {
-      state.hunger = Math.min(100, state.hunger + 18);
-      state.fatigue = Math.min(100, state.fatigue + 12);
-      if (state.hunger > 100) { state.health -= 25; state.hunger = 100; log("Голод! -25 здоровья"); }
-      if (state.fatigue > 100) { state.health -= 20; state.fatigue = 100; log("Усталость! -20 здоровья"); }
-      if (state.health <= 0) gameOver();
-      updateStats();
-      saveGame();
-    }
-
-    function log(msg) {
-      const div = document.createElement('div');
-      div.textContent = `[День ${state.day}] ${msg}`;
-      logEl.appendChild(div);
-      logEl.scrollTop = logEl.scrollHeight;
-    }
-
-    // === ДЕЙСТВИЯ ===
-    document.getElementById('rest').onclick = () => { state.fatigue = Math.max(0, state.fatigue - 50); log("Отдых: -50 усталости"); nextTurn(); };
-    document.getElementById('eat').onclick = () => {
-      if (state.food > 0) { state.food--; state.hunger = Math.max(0, state.hunger - 60); log("Съели еду"); nextTurn(); }
-      else log("Нет еды!");
-    };
-    document.getElementById('explore').onclick = () => {
-      const idx = state.position.y * MAP_SIZE + state.position.x;
-      if (state.visited.has(idx)) log("Уже исследовано!");
-      else { state.visited.add(idx); exploreCell(state.map[idx]); renderMap(); }
-      nextTurn();
-    };
-
-    // === КНОПКИ КАРТЫ И НАСТРОЕК ===
-    document.getElementById('openMap').onclick = () => { mapContainer.style.display = 'block'; renderMap(); };
-    document.getElementById('closeMap').onclick = () => { mapContainer.style.display = 'none'; };
-    document.getElementById('openSettings').onclick = () => { settingsMenu.style.display = 'block'; };
-    document.getElementById('closeSettings').onclick = () => { settingsMenu.style.display = 'none'; };
-    document.getElementById('resetGame').onclick = () => { if (confirm("Сбросить прогресс?")) { localStorage.removeItem('survivor_save'); location.reload(); } };
-    document.getElementById('shareRecord').onclick = () => { Telegram.WebApp.shareScore?.() || alert(`Я выжил ${state.day} дней!`); };
-
-    // === СОХРАНЕНИЕ ===
-    function saveGame() {
-      const save = { ...state, visited: Array.from(state.visited) };
-      localStorage.setItem('survivor_save', JSON.stringify(save));
-    }
-
-    function loadGame() {
-      const saved = localStorage.getItem('survivor_save');
-      if (saved) {
-        const data = JSON.parse(saved);
-        Object.assign(state, data);
-        state.visited = new Set(data.visited || []);
-      } else {
-        generateMap();
-      }
-    }
-
-    function gameOver() {
-      log(`ИГРА ОКОНЧЕНА! Выжили ${state.day} дней.`);
-      alert(`Выжили ${state.day} дней!`);
-      localStorage.removeItem('survivor_save');
-      setTimeout(() => location.reload(), 3000);
     }
 
     // === СТАРТ ===
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
     Telegram.WebApp.MainButton.setText('Поделиться').show().onClick(() => {
-      Telegram.WebApp.shareScore?.() || alert(`Я выжил ${state.day} дней в пост-апоке!`);
+      Telegram.WebApp.shareScore?.() || alert(`Я набрал ${state.ton} TON на уровне ${state.level}!`);
     });
 
-    loadGame();
-    updateStats();
-    setInterval(() => { state.day++; log(`Новый день: ${state.day}`); nextTurn(); }, 45000); // 45 сек = 1 день
+    setInterval(() => {
+      state.day++;
+      dayEl.textContent = state.day;
+      if (state.day % 5 === 0) alert(`ДЕНЬ ${state.day}: БОСС!`);
+    }, 30000);
   </script>
 </body>
 </html>
