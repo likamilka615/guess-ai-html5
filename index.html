@@ -3,92 +3,112 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Угадай ИИ</title>
+  <title>Крипто-Космос</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;text-align:center;padding:20px;min-height:100vh}
-    h1{margin:15px 0;font-size:1.8em}
-    #img{width:280px;height:280px;margin:20px auto;border-radius:20px;overflow:hidden;box-shadow:0 15px 30px rgba(0,0,0,.3);background:#000}
-    #img img{width:100%;height:100%;object-fit:contain}
-    .opt{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:25px auto;max-width:320px}
-    .btn{padding:16px;background:rgba(255,255,255,.15);border:2px solid transparent;border-radius:16px;font-size:1em;transition:.3s;backdrop-filter:blur(10px)}
-    .btn.correct{background:#4ade80!important;border-color:#22c55e;transform:scale(1.05)}
-    .btn.wrong{background:#ef4444!important;border-color:#dc2626}
-    #score,#streak{font-weight:bold;margin:10px 0}
-    #score{font-size:1.5em}
-    #streak{font-size:1.2em;color:#fbbf24}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#000 url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=512') center/cover;color:#0f0;text-align:center;padding:20px;min-height:100vh}
+    h1{margin:15px 0;font-size:1.8em;color:#0ff;text-shadow:0 0 10px #0ff}
+    #planet{width:200px;height:200px;margin:20px auto;border-radius:50%;overflow:hidden;box-shadow:0 0 30px #0f0;background:#111}
+    #planet img{width:100%;height:100%;object-fit:cover}
+    #resources,#shield{font-size:1.4em;margin:10px 0;color:#0f0}
+    #clickBtn{font-size:3em;background:#0f0;color:#000;border:none;border-radius:50%;width:100px;height:100px;cursor:pointer;margin:15px}
+    #puzzle{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;width:150px;margin:20px auto}
+    .tile{width:48px;height:48px;background:#333;color:#0f0;font-size:1.2em;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #0f0}
+    .tile.empty{background:#111;border-color:#555}
+    #leaderboard{margin:20px 0;color:#ff0;font-size:0.9em}
   </style>
 </head>
 <body>
-  <h1>УГАДАЙ, ЧТО НАРИСОВАЛ ИИ!</h1>
-  <div id="score">Счёт: 0</div>
-  <div id="streak">Серия: 0</div>
-  <div id="img"><img id="ai" src="" alt="ИИ-картинка"></div>
-  <div class="opt" id="opts"></div>
+  <h1>КРИПТО-КОСМОС</h1>
+  <div id="planetNum">Планета #1</div>
+  <div id="planet"><img id="planetImg" src="" alt="Планета"></div>
+  <div id="resources">TON: 0</div>
+  <div id="shield">Защита: 0%</div>
+  <button id="clickBtn">⚡</button>
+  <div id="puzzle"></div>
+  <div id="leaderboard">Лидер: @user — 999 TON</div>
 
   <script>
-    // === 10 Готовых ИИ-картинок из Lexica/Neural Frames (проверено, грузятся!)
-    const prompts = [
-      {text: "кот в скафандре на Луне", img: "https://image.pollinations.ai/prompt/cat%20in%20spacesuit%20on%20moon?width=512&height=512&seed=42"},
-      {text: "пицца с глазами и ногами", img: "https://image.pollinations.ai/prompt/pizza%20with%20eyes%20and%20legs?width=512&height=512&seed=123"},
-      {text: "динозавр на самокате", img: "https://image.pollinations.ai/prompt/dinosaur%20on%20scooter?width=512&height=512&seed=456"},
-      {text: "ёжик играет на гитаре", img: "https://image.pollinations.ai/prompt/hedgehog%20playing%20guitar?width=512&height=512&seed=789"},
-      {text: "робот пьёт кофе", img: "https://image.pollinations.ai/prompt/robot%20drinking%20coffee?width=512&height=512&seed=101"},
-      {text: "медведь в костюме супермена", img: "https://image.pollinations.ai/prompt/bear%20in%20superman%20costume?width=512&height=512&seed=112"},
-      {text: "слон танцует балет", img: "https://image.pollinations.ai/prompt/elephant%20dancing%20ballet?width=512&height=512&seed=131"},
-      {text: "авокадо с короной", img: "https://image.pollinations.ai/prompt/avocado%20with%20crown?width=512&height=512&seed=415"},
-      {text: "книга летает", img: "https://image.pollinations.ai/prompt/book%20flying?width=512&height=512&seed=161"},
-      {text: "тост дерётся на мечах", img: "https://image.pollinations.ai/prompt/toast%20fighting%20with%20swords?width=512&height=512&seed=171"}
-    ];
+    let ton = 0, shield = 0, planetId = 1;
+    const planetImg = document.getElementById('planetImg');
+    const resources = document.getElementById('resources');
+    const shieldEl = document.getElementById('shield');
+    const planetNum = document.getElementById('planetNum');
+    const clickBtn = document.getElementById('clickBtn');
+    const puzzle = document.getElementById('puzzle');
 
-    let cur, score = 0, streak = 0, used = [];
-    const ai = document.getElementById('ai');
-    const opts = document.getElementById('opts');
-    const sc = document.getElementById('score');
-    const st = document.getElementById('streak');
+    // === ИИ ГЕНЕРИРУЕТ ПЛАНЕТУ ===
+    async function generatePlanet() {
+      planetNum.textContent = `Планета #${planetId}`;
+      planetImg.src = `https://image.pollinations.ai/prompt/alien%20planet%20with%20AI%20virus%20infection%20${planetId}?width=512&height=512&seed=${Date.now()}`;
+      shield = 0;
+      shieldEl.textContent = `Защита: ${shield}%`;
+    }
 
-    function next() {
-      if (used.length === prompts.length) used = [];
-      do { cur = prompts[Math.floor(Math.random() * prompts.length)]; } while (used.includes(cur));
-      used.push(cur);
+    // === КЛИКЕР ===
+    clickBtn.onclick = () => {
+      ton += 1 + Math.floor(shield / 20);
+      resources.textContent = `TON: ${ton}`;
+      shield = Math.min(shield + 1, 100);
+      shieldEl.textContent = `Защита: ${shield}%`;
+      Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+      if (shield === 100) {
+        alert(`ПЛАНЕТА СПАСЕНА! +${ton} TON`);
+        planetId++;
+        generatePlanet();
+        ton = 0;
+        resources.textContent = `TON: ${ton}`;
+      }
+    };
 
-      ai.src = cur.img;
-
-      const wrong = prompts.filter(x => x !== cur);
-      const arr = [cur, ...wrong.sort(() => .5 - Math.random()).slice(0,3)].sort(() => .5 - Math.random());
-
-      opts.innerHTML = '';
-      arr.forEach(o => {
-        const b = document.createElement('div');
-        b.className = 'btn';
-        b.textContent = o.text;
-        b.onclick = () => choose(o === cur, b);
-        opts.appendChild(b);
+    // === ПАЗЛ 3x3 ===
+    function initPuzzle() {
+      puzzle.innerHTML = '';
+      let tiles = [1,2,3,4,5,6,7,8,''];
+      tiles.sort(() => .5 - Math.random());
+      tiles.forEach(t => {
+        const tile = document.createElement('div');
+        tile.className = 'tile' + (t===''?' empty':'');
+        tile.textContent = t;
+        tile.onclick = () => moveTile(tile, t);
+        puzzle.appendChild(tile);
       });
     }
 
-    function choose(ok, b) {
-      document.querySelectorAll('.btn').forEach(x => x.style.pointerEvents = 'none');
-      if (ok) { b.classList.add('correct'); score += 10; streak++; Telegram.WebApp.HapticFeedback.notificationOccurred('success'); }
-      else { b.classList.add('wrong'); streak = 0; Telegram.WebApp.HapticFeedback.notificationOccurred('error'); }
-      sc.textContent = `Счёт: ${score}`;
-      st.textContent = `Серия: ${streak}`;
-      setTimeout(() => {
-        if (ok && streak % 5 === 0) { score += 50; sc.textContent = `Счёт: ${score}`; alert(`БОНУС +50!`); }
-        next();
-      }, 1500);
+    function moveTile(tile, num) {
+      const empty = document.querySelector('.empty');
+      if (!empty) return;
+      const i1 = Array.from(puzzle.children).indexOf(tile);
+      const i2 = Array.from(puzzle.children).indexOf(empty);
+      if (Math.abs(i1 - i2) === 1 || Math.abs(i1 - i2) === 3) {
+        empty.textContent = num;
+        empty.classList.remove('empty');
+        tile.textContent = '';
+        tile.classList.add('empty');
+        checkWin();
+      }
     }
 
-    function share() {
-      const txt = `Я угадал ${score} ИИ-картинок! Серия: ${streak}\nПобей меня в @guess_ai_game_bot!`;
-      Telegram.WebApp.shareScore?.() || navigator.share?.({text: txt}) || alert(txt);
+    function checkWin() {
+      const tiles = Array.from(puzzle.children).map(t => t.textContent);
+      if (tiles.join('') === '12345678') {
+        ton += 10;
+        resources.textContent = `TON: ${ton}`;
+        alert('ПАЗЛ РЕШЁН! +10 TON');
+        initPuzzle();
+      }
     }
+
+    // === СТАРТ ===
+    generatePlanet();
+    initPuzzle();
 
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
-    Telegram.WebApp.MainButton.setText('Поделиться счётом').show().onClick(share);
-    next();
+    Telegram.WebApp.MainButton.setText('Поделиться спасением').show().onClick(() => {
+      Telegram.WebApp.shareScore?.() || alert(`Я спас ${planetId} планет! TON: ${ton}`);
+    });
   </script>
 </body>
 </html>
