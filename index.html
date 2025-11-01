@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Угадай ИИ</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -63,8 +63,106 @@
   <div class="options" id="options"></div>
 
   <script>
-    // === ВСТРОЕННЫЕ КАРТИНКИ (Base64, 100% РАБОЧИЕ) ===
+    // === ПРОСТЫЕ SVG-КАРТИНКИ (ВСТРОЕННЫЕ, БЕЗ ССЫЛОК) ===
     const prompts = [
-      {
-        text: "кот в скафандре на Луне",
-        img: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltW5eGqX6Z2jJ1q1N2i1Z5l2U6J3J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J3J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J2J
+      { 
+        text: "кот в скафандре на Луне", 
+        img: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE0MCIgY3k9IjEwMCIgcj0iNDAiIGZpbGw9IndoaXRlIi8+PGNpcmNsZSBjeD0iMTEwIiBjeT0iODUiIHI9IjUiIGZpbGw9ImJsYWNrIi8+PGNpcmNsZSBjeD0iMTcwIiBjeT0iODUiIHI9IjUiIGZpbGw9ImJsYWNrIi8+PHBhdGggZD0iTTEwMCAxMjAgTDIwMCAxMjAiIHN0cm9rZT0iZ3JlZW4iIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPjx0ZXh0IHg9IjE0MCIgeT0iMjUwIiBmaWxsPSJ5ZWxsb3ciIGZvbnQtc2l6ZT0iMTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkxVT04gQ09UPC90ZXh0Pjwvc3ZnPg==' 
+      },
+      { 
+        text: "пицца с глазами и ногами", 
+        img: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxNDAiIHI9IjgwIiBmaWxsPSJ5ZWxsb3ciLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSIxMjAiIHI9IjEwIiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE2MCIgY3k9IjEyMCIgcj0iMTAiIGZpbGw9ImJsYWNrIi8+PHJlY3QgeD0iMTEwIiB5PSIxODAiIHdpZHRoPSI2MCIgaGVpZ2h0PSIyMCIgZmlsbD0iYnJvd24iLz48cmVjdCB4PSIxNjAiIHk9IjE4MCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjIwIiBmaWxsPSJicm93biIvPjx0ZXh0IHg9IjE0MCIgeT0iMjUwIiBmaWxsPSJyZWQiIGZvbnQtc2l6ZT0iMTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlBJWlpBPC90ZXh0Pjwvc3ZnPg==' 
+      },
+      { 
+        text: "динозавр на самокате", 
+        img: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJncmVlbiIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjIwMCIgcj0iMjAiIGZpbGw9ImdyYXkiLz48Y2lyY2xlIGN4PSIxODAiIGN5PSIyMDAiIHI9IjIwIiBmaWxsPSJncmF5Ii8+PHBhdGggZD0iTTUwIDE1MCBRMTAwIDEyMCAxNTAgMTUwIiBzdHJva2U9ImJsdWUiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIvPjx0ZXh0IHg9IjE0MCIgeT0iMjUwIiBmaWxsPSJibGFjayIgZm9udC1zaXplPSIxNSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+RklOTyBPTiBQQVRBPC90ZXh0Pjwvc3ZnPg==' 
+      },
+      { 
+        text: "ёжик играет на гитаре", 
+        img: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxMDAiIHI9IjQwIiBmaWxsPSJicm93biIvPjxjaXJjbGUgY3g9IjExMCIgY3k9IjgwIiByPSIyIiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE3MCIgY3k9IjgwIiByPSIyIiBmaWxsPSJibGFjayIvPjxyZWN0IHg9IjE1MCIgeT0iMTUwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjIwIiBmaWxsPSJibHVlIi8+PHRleHQgeD0iMTQwIiB5PSIyNTAiIGZpbGw9ImJsb3duIiBmb250LXNpemU9IjE1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5IRURHRUhPRyBHVUlUQVJFPHRleHQ+PC9zdmc+==' 
+      },
+      { 
+        text: "робот пьёт кофе", 
+        img: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSI5MCIgeT0iNjAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTUwIiBmaWxsPSJzaWx2ZXIiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSIxMDAiIHI9IjIwIiBmaWxsPSJibHVlIi8+PGNpcmNsZSBjeD0iMTYwIiBjeT0iMTAwIiByPSIyMCIgZmlsbD0iYmx1ZSIvPjxyZWN0IHg9IjEzMCIgeT0iMTUwIiB3aWR0aD0iNDAiIGhlaWdodD0iNTAiIGZpbGw9ImJyb3duIi8+PHRleHQgeD0iMTQwIiB5PSIyNTAiIGZpbGw9ImJsYWNrIiBmb250LXNpemU9IjE1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5ST0JPVCAoYWJzdHJhY3QpPC90ZXh0Pjwvc3ZnPg==' 
+      },
+      { 
+        text: "медведь в костюме супермена", 
+        img: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxMDAiIHI9IjUwIiBmaWxsPSJicm93biIvPjxjaXJjbGUgY3g9IjExMCIgY3k9IjgwIiByPSI1IiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE3MCIgY3k9IjgwIiByPSI1IiBmaWxsPSJibGFjayIvPjxyZWN0IHg9IjEwMCIgeT0iMTUwIiB3aWR0aD0iODAiIGhlaWdodD0iMTAwIiBmaWxsPSJyZWQiLz48dGV4dCB4PSIxNDAiIHk9IjI1MCIgZmlsbD0icmVkIiBmb250LXNpemU9IjE1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5CRUFSIFNVUEVSTUFORDwvdGV4dD48L3N2Zz4=' 
+      }
+    ];
+
+    let currentRound = null;
+    let score = 0;
+    let streak = 0;
+
+    const imageEl = document.getElementById('aiImage');
+    const optionsEl = document.getElementById('options');
+    const scoreEl = document.getElementById('score');
+    const streakEl = document.getElementById('streak');
+
+    function nextRound() {
+      currentRound = prompts[Math.floor(Math.random() * prompts.length)];
+      imageEl.src = currentRound.img;
+
+      const wrong = prompts.filter(p => p !== currentRound);
+      const options = [currentRound, ...wrong.sort(() => 0.5 - Math.random()).slice(0,3)];
+      options.sort(() => 0.5 - Math.random());
+
+      optionsEl.innerHTML = '';
+      options.forEach((opt) => {
+        const btn = document.createElement('div');
+        btn.className = 'option';
+        btn.textContent = opt.text;
+        btn.onclick = () => selectAnswer(opt === currentRound, btn);
+        optionsEl.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(isCorrect, btn) {
+      document.querySelectorAll('.option').forEach(b => b.style.pointerEvents = 'none');
+
+      if (isCorrect) {
+        btn.classList.add('correct');
+        score += 10;
+        streak++;
+        Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+      } else {
+        btn.classList.add('wrong');
+        streak = 0;
+        Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+      }
+
+      updateScore();
+      setTimeout(() => {
+        if (isCorrect && streak % 5 === 0) {
+          score += 50;
+          updateScore();
+          alert(`БОНУС! +50 за серию ${streak}!`);
+        }
+        nextRound();
+      }, 1500);
+    }
+
+    function updateScore() {
+      scoreEl.textContent = `Счёт: ${score}`;
+      streakEl.textContent = `Серия: ${streak} 🔥`;
+    }
+
+    function shareScore() {
+      const text = `Я угадал ${score} ИИ-картинок! Серия: ${streak}\nПобей меня в @guess_ai_game_bot!`;
+      Telegram.WebApp.shareScore?.() || navigator.share?.({ text }) || alert(text);
+    }
+
+    function startGame() {
+      nextRound();
+      Telegram.WebApp.ready();
+      Telegram.WebApp.expand();
+      Telegram.WebApp.MainButton.setText('Поделиться счётом');
+      Telegram.WebApp.MainButton.show();
+      Telegram.WebApp.MainButton.onClick(shareScore);
+    }
+
+    startGame();
+  </script>
+</body>
+</html>
