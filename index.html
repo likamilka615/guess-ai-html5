@@ -43,27 +43,30 @@
       "тост дерётся на мечах"
     ];
 
-    let cur, score = 0, streak = 0, used = [];
+    let cur, score = 0, streak = 0, used = [], cache = {};
     const ai = document.getElementById('ai');
     const opts = document.getElementById('opts');
     const sc = document.getElementById('score');
     const st = document.getElementById('streak');
     const load = document.getElementById('load');
 
-    // === ГЕНЕРАЦИЯ ЧЕРЕЗ CLOUDFLARE WORKERS AI (БЕСПЛАТНО, БЕЗ КЛЮЧЕЙ) ===
+    // === ПОИСК ИИ-КАРТИНКИ НА LEXICA (БЕСПЛАТНО, БЕЗ КЛЮЧЕЙ, НЕОГРАНИЧЕННО) ===
     async function genImage(prompt) {
       load.style.display = "block";
 
+      if (cache[prompt]) {
+        ai.src = cache[prompt];
+        load.style.display = "none";
+        return;
+      }
+
       try {
-        const res = await fetch('https://api.cloudflare.com/client/v4/accounts/YOUR_ACCOUNT_ID/ai/run/@cf/meta/stable-diffusion-xl-base-1.0', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: prompt })
-        });
+        const res = await fetch(`https://lexica.art/api/v1/search?q=${encodeURIComponent(prompt)}`);
         const data = await res.json();
-        ai.src = data.output[0]; // URL сгенерированной картинки
+        const img = data.images && data.images.length > 0 ? data.images[0].src : `https://via.placeholder.com/280/7c3aed/fff?text=${encodeURIComponent(prompt)}`;
+        cache[prompt] = img;
+        ai.src = img;
       } catch (e) {
-        // Fallback — placeholder с текстом
         ai.src = `https://via.placeholder.com/280/7c3aed/fff?text=${encodeURIComponent(prompt)}`;
       }
       load.style.display = "none";
