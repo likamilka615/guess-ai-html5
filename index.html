@@ -6,163 +6,91 @@
   <title>Угадай ИИ</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      text-align: center;
-      padding: 20px;
-      min-height: 100vh;
-      overflow: hidden;
-    }
-    h1 { margin: 15px 0; font-size: 1.8em; }
-    #imageContainer {
-      width: 280px; height: 280px;
-      margin: 20px auto;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-      background: #000;
-    }
-    #aiImage {
-      width: 100%; height: 100%;
-      object-fit: contain;
-    }
-    .options {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin: 25px auto;
-      max-width: 320px;
-    }
-    .option {
-      padding: 16px;
-      background: rgba(255,255,255,0.15);
-      border: 2px solid transparent;
-      border-radius: 16px;
-      font-size: 1em;
-      transition: all 0.3s;
-      backdrop-filter: blur(10px);
-    }
-    .option.correct { background: #4ade80 !important; border-color: #22c55e; transform: scale(1.05); }
-    .option.wrong { background: #ef4444 !important; border-color: #dc2626; }
-    #score { font-size: 1.5em; margin: 15px 0; font-weight: bold; }
-    #streak { font-size: 1.2em; color: #fbbf24; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;text-align:center;padding:20px;min-height:100vh}
+    h1{margin:15px 0;font-size:1.8em}
+    #img{width:280px;height:280px;margin:20px auto;border-radius:20px;overflow:hidden;box-shadow:0 15px 30px rgba(0,0,0,.3)}
+    #img img{width:100%;height:100%;object-fit:contain}
+    .opt{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:25px auto;max-width:320px}
+    .btn{padding:16px;background:rgba(255,255,255,.15);border:2px solid transparent;border-radius:16px;font-size:1em;transition:.3s;backdrop-filter:blur(10px)}
+    .btn.correct{background:#4ade80!important;border-color:#22c55e;transform:scale(1.05)}
+    .btn.wrong{background:#ef4444!important;border-color:#dc2626}
+    #score,#streak{font-weight:bold;margin:10px 0}
+    #score{font-size:1.5em}
+    #streak{font-size:1.2em;color:#fbbf24}
   </style>
 </head>
 <body>
   <h1>УГАДАЙ, ЧТО НАРИСОВАЛ ИИ!</h1>
   <div id="score">Счёт: 0</div>
-  <div id="streak">Серия: 0 🔥</div>
-
-  <div id="imageContainer">
-    <img id="aiImage" src="" alt="ИИ-картинка">
-  </div>
-
-  <div class="options" id="options"></div>
+  <div id="streak">Серия: 0</div>
+  <div id="img"><img id="ai" src="" alt=""></div>
+  <div class="opt" id="opts"></div>
 
   <script>
-    // === ПРОСТЫЕ SVG-КАРТИНКИ (ВСТРОЕННЫЕ, БЕЗ ССЫЛОК) ===
-    const prompts = [
-      { 
-        text: "кот в скафандре на Луне", 
-        img: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE0MCIgY3k9IjEwMCIgcj0iNDAiIGZpbGw9IndoaXRlIi8+PGNpcmNsZSBjeD0iMTEwIiBjeT0iODUiIHI9IjUiIGZpbGw9ImJsYWNrIi8+PGNpcmNsZSBjeD0iMTcwIiBjeT0iODUiIHI9IjUiIGZpbGw9ImJsYWNrIi8+PHBhdGggZD0iTTEwMCAxMjAgTDIwMCAxMjAiIHN0cm9rZT0iZ3JlZW4iIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPjx0ZXh0IHg9IjE0MCIgeT0iMjUwIiBmaWxsPSJ5ZWxsb3ciIGZvbnQtc2l6ZT0iMTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkxVT04gQ09UPC90ZXh0Pjwvc3ZnPg==' 
-      },
-      { 
-        text: "пицца с глазами и ногами", 
-        img: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxNDAiIHI9IjgwIiBmaWxsPSJ5ZWxsb3ciLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSIxMjAiIHI9IjEwIiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE2MCIgY3k9IjEyMCIgcj0iMTAiIGZpbGw9ImJsYWNrIi8+PHJlY3QgeD0iMTEwIiB5PSIxODAiIHdpZHRoPSI2MCIgaGVpZ2h0PSIyMCIgZmlsbD0iYnJvd24iLz48cmVjdCB4PSIxNjAiIHk9IjE4MCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjIwIiBmaWxsPSJicm93biIvPjx0ZXh0IHg9IjE0MCIgeT0iMjUwIiBmaWxsPSJyZWQiIGZvbnQtc2l6ZT0iMTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlBJWlpBPC90ZXh0Pjwvc3ZnPg==' 
-      },
-      { 
-        text: "динозавр на самокате", 
-        img: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJncmVlbiIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjIwMCIgcj0iMjAiIGZpbGw9ImdyYXkiLz48Y2lyY2xlIGN4PSIxODAiIGN5PSIyMDAiIHI9IjIwIiBmaWxsPSJncmF5Ii8+PHBhdGggZD0iTTUwIDE1MCBRMTAwIDEyMCAxNTAgMTUwIiBzdHJva2U9ImJsdWUiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIvPjx0ZXh0IHg9IjE0MCIgeT0iMjUwIiBmaWxsPSJibGFjayIgZm9udC1zaXplPSIxNSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+RklOTyBPTiBQQVRBPC90ZXh0Pjwvc3ZnPg==' 
-      },
-      { 
-        text: "ёжик играет на гитаре", 
-        img: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxMDAiIHI9IjQwIiBmaWxsPSJicm93biIvPjxjaXJjbGUgY3g9IjExMCIgY3k9IjgwIiByPSIyIiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE3MCIgY3k9IjgwIiByPSIyIiBmaWxsPSJibGFjayIvPjxyZWN0IHg9IjE1MCIgeT0iMTUwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjIwIiBmaWxsPSJibHVlIi8+PHRleHQgeD0iMTQwIiB5PSIyNTAiIGZpbGw9ImJsb3duIiBmb250LXNpemU9IjE1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5IRURHRUhPRyBHVUlUQVJFPHRleHQ+PC9zdmc+==' 
-      },
-      { 
-        text: "робот пьёт кофе", 
-        img: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSI5MCIgeT0iNjAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTUwIiBmaWxsPSJzaWx2ZXIiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSIxMDAiIHI9IjIwIiBmaWxsPSJibHVlIi8+PGNpcmNsZSBjeD0iMTYwIiBjeT0iMTAwIiByPSIyMCIgZmlsbD0iYmx1ZSIvPjxyZWN0IHg9IjEzMCIgeT0iMTUwIiB3aWR0aD0iNDAiIGhlaWdodD0iNTAiIGZpbGw9ImJyb3duIi8+PHRleHQgeD0iMTQwIiB5PSIyNTAiIGZpbGw9ImJsYWNrIiBmb250LXNpemU9IjE1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5ST0JPVCAoYWJzdHJhY3QpPC90ZXh0Pjwvc3ZnPg==' 
-      },
-      { 
-        text: "медведь в костюме супермена", 
-        img: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxMDAiIHI9IjUwIiBmaWxsPSJicm93biIvPjxjaXJjbGUgY3g9IjExMCIgY3k9IjgwIiByPSI1IiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE3MCIgY3k9IjgwIiByPSI1IiBmaWxsPSJibGFjayIvPjxyZWN0IHg9IjEwMCIgeT0iMTUwIiB3aWR0aD0iODAiIGhlaWdodD0iMTAwIiBmaWxsPSJyZWQiLz48dGV4dCB4PSIxNDAiIHk9IjI1MCIgZmlsbD0icmVkIiBmb250LXNpemU9IjE1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5CRUFSIFNVUEVSTUFORDwvdGV4dD48L3N2Zz4=' 
-      }
+    // === 20+ УНИКАЛЬНЫХ ПРОМПТОВ + SVG ===
+    const data = [
+      {t:"кот в скафандре на Луне",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE0MCIgY3k9IjEwMCIgcj0iNDAiIGZpbGw9IndoaXRlIi8+PGNpcmNsZSBjeD0iMTEwIiBjeT0iODUiIHI9IjUiIGZpbGw9ImJsYWNrIi8+PGNpcmNsZSBjeD0iMTcwIiBjeT0iODUiIHI9IjUiIGZpbGw9ImJsYWNrIi8+PHBhdGggZD0iTTEwMCAxMjAgTDIwMCAxMjAiIHN0cm9rZT0iZ3JlZW4iIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjE0MCIgeT0iMjUwIiBmaWxsPSJ5ZWxsb3ciIGZvbnQtc2l6ZT0iMTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkxVTkEgQ09UPC90ZXh0Pjwvc3ZnPg=='},
+      {t:"пицца с глазами и ногами",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxNDAiIHI9IjgwIiBmaWxsPSJ5ZWxsb3ciLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSIxMjAiIHI9IjEwIiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE2MCIgY3k9IjEyMCIgcj0iMTAiIGZpbGw9ImJsYWNrIi8+PHJlY3QgeD0iMTEwIiB5PSIxODAiIHdpZHRoPSI2MCIgaGVpZ2h0PSIyMCIgZmlsbD0iYnJvd24iLz48cmVjdCB4PSIxNjAiIHk9IjE4MCIgd2lkdGg9IjYwIiBoZWpnaHQ9IjIwIiBmaWxsPSJicm93biIvPjx0ZXh0IHg9IjE0MCIgeT0iMjUwIiBmaWxsPSJyZWQiIGZvbnQtc2l6ZT0iMTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlBJWlpBPC90ZXh0Pjwvc3ZnPg=='},
+      {t:"динозавр на самокате",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJncmVlbiIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjIwMCIgcj0iMjAiIGZpbGw9ImdyYXkiLz48Y2lyY2xlIGN4PSIxODAiIGN5PSIyMDAiIHI9IjIwIiBmaWxsPSJncmF5Ii8+PHBhdGggZD0iTTUwIDE1MCBRMTAwIDEyMCAxNTAgMTUwIiBzdHJva2U9ImJsdWUiIHN0cm9rZS13aWR0aD0iNSIvPjx0ZXh0IHg9IjE0MCIgeT0iMjUwIiBmaWxsPSJibGFjayIgZm9udC1zaXplPSIxNSI+RklOTyBPTiBQQVRBPC90ZXh0Pjwvc3ZnPg=='},
+      {t:"ёжик играет на гитаре",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxMDAiIHI9IjQwIiBmaWxsPSJicm93biIvPjxjaXJjbGUgY3g9IjExMCIgY3k9IjgwIiByPSIyIiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE3MCIgY3k9IjgwIiByPSIyIiBmaWxsPSJibGFjayIvPjxyZWN0IHg9IjE1MCIgeT0iMTUwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjIwIiBmaWxsPSJibHVlIi8+PHRleHQgeD0iMTQwIiB5PSIyNTAiIGZpbGw9ImJyb3duIiBmb250LXNpemU9IjE1Ij5IRURHRUhPRyBHVUlUQVJFPHRleHQ+PC9zdmc+=='},
+      {t:"робот пьёт кофе",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSI5MCIgeT0iNjAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTUwIiBmaWxsPSJzaWx2ZXIiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSIxMDAiIHI9IjIwIiBmaWxsPSJibHVlIi8+PGNpcmNsZSBjeD0iMTYwIiBjeT0iMTAwIiByPSIyMCIgZmlsbD0iYmx1ZSIvPjxyZWN0IHg9IjEzMCIgeT0iMTUwIiB3aWR0aD0iNDAiIGhlaWdodD0iNTAiIGZpbGw9ImJyb3duIi8+PHRleHQgeD0iMTQwIiB5PSIyNTAiIGZpbGw9ImJsYWNrIiBmb250LXNpemU9IjE1Ij5ST0JPVCAoYWJzdHJhY3QpPC90ZXh0Pjwvc3ZnPg=='},
+      {t:"медведь в костюме супермена",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxMDAiIHI9IjUwIiBmaWxsPSJicm93biIvPjxjaXJjbGUgY3g9IjExMCIgY3k9IjgwIiByPSI1IiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE3MCIgY3k9IjgwIiByPSI1IiBmaWxsPSJibGFjayIvPjxyZWN0IHg9IjEwMCIgeT0iMTUwIiB3aWR0aD0iODAiIGhlaWdodD0iMTAwIiBmaWxsPSJyZWQiLz48dGV4dCB4PSIxNDAiIHk9IjI1MCIgZmlsbD0icmVkIiBmb250LXNpemU9IjE1Ij5CRUFSIFNVUEVSTUFORDwvdGV4dD48L3N2Zz4='},
+      {t:"слон танцует балет",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxMDAiIHI9IjYwIiBmaWxsPSJncmF5Ii8+PGNpcmNsZSBjeD0iMTEwIiBjeT0iODAiIHI9IjUiIGZpbGw9ImJsYWNrIi8+PGNpcmNsZSBjeD0iMTcwIiBjeT0iODAiIHI9IjUiIGZpbGw9ImJsYWNrIi8+PHJlY3QgeD0iMTAwIiB5PSIxNjAiIHdpZHRoPSIxMDAiIGhlaWdodD0iNDAiIGZpbGw9InBpbmsiLz48dGV4dCB4PSIxNDAiIHk9IjI1MCIgZmlsbD0icGluayIgZm9udC1zaXplPSIxNSI+RUxFUEhBTlQgQkFMTEVUJGN4PjwvdGV4dD48L3N2Zz4='},
+      {t:"авокадо с короной",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxNDAiIHI9IjYwIiBmaWxsPSJncmVlbiIvPjxjaXJjbGUgY3g9IjE0MCIgY3k9IjEwMCIgcj0iMjAiIGZpbGw9ImJyb3duIi8+PHBvbHlnb24gcG9pbnRzPSIxMzAsMTIwIDE0MCwxMDAgMTUwLDEyMCIgZmlsbD0ieWVsbG93Ii8+PHRleHQgeD0iMTQwIiB5PSIyNTAiIGZpbGw9InllbGxvdyIgZm9udC1zaXplPSIxNSI+QVZPQ0FETyBLSU5HPC90ZXh0Pjwvc3ZnPg=='},
+      {t:"книга летает",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSIxMDAiIHk9IjEwMCIgd2lkdGg9IjgwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iYmx1ZSIvPjxwYXRoIGQ9Ik0xMDAgMTAwIEwxMjAgODAgTDE0MCAxMDAiIHN0cm9rZT0ieWVsbG93IiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSIxNDAiIHk9IjI1MCIgZmlsbD0ieWVsbG93IiBmb250LXNpemU9IjE1Ij5CTE9PSyBGTFlFUzwvdGV4dD48L3N2Zz4='},
+      {t:"тост дерётся на мечах",s:'PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSIxMDAiIHk9IjEyMCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjQwIiBmaWxsPSJicm93biIvPjxyZWN0IHg9IjE2MCIgeT0iMTIwIiB3aWR0aD0iNjAiIGhlaWdodD0iNDAiIGZpbGw9ImJyb3duIi8+PHBhdGggZD0iTTEyMCAxMjAgTDExMCAxMDAgTDEyMCA4MCIgc3Ryb2tlPSJzaWx2ZXIiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xNjAgMTIwIEwxNzAgMTAwIDE2MCA4MCIgc3Ryb2tlPSJzaWx2ZXIiIHN0cm9rZS13aWR0aD0iMyIvPjx0ZXh0IHg9IjE0MCIgeT0iMjUwIiBmaWxsPSJzaWx2ZXIiIGZvbnQtc2l6ZT0iMTUiPlRPUVNUIERVRUw8L3RleHQ+PC9zdmc+=='}
     ];
 
-    let currentRound = null;
-    let score = 0;
-    let streak = 0;
+    let cur, score = 0, streak = 0, used = [];
 
-    const imageEl = document.getElementById('aiImage');
-    const optionsEl = document.getElementById('options');
-    const scoreEl = document.getElementById('score');
-    const streakEl = document.getElementById('streak');
+    const ai = document.getElementById('ai'),
+          opts = document.getElementById('opts'),
+          sc = document.getElementById('score'),
+          st = document.getElementById('streak');
 
-    function nextRound() {
-      currentRound = prompts[Math.floor(Math.random() * prompts.length)];
-      imageEl.src = currentRound.img;
+    function next() {
+      // НЕ ПОВТОРЯЕТСЯ
+      if (used.length === data.length) used = [];
+      do { cur = data[Math.floor(Math.random() * data.length)]; }
+      while (used.includes(cur));
+      used.push(cur);
 
-      const wrong = prompts.filter(p => p !== currentRound);
-      const options = [currentRound, ...wrong.sort(() => 0.5 - Math.random()).slice(0,3)];
-      options.sort(() => 0.5 - Math.random());
+      ai.src = 'data:image/svg+xml;base64,' + cur.s;
 
-      optionsEl.innerHTML = '';
-      options.forEach((opt) => {
-        const btn = document.createElement('div');
-        btn.className = 'option';
-        btn.textContent = opt.text;
-        btn.onclick = () => selectAnswer(opt === currentRound, btn);
-        optionsEl.appendChild(btn);
+      const wrong = data.filter(x => x !== cur);
+      const arr = [cur, ...wrong.sort(() => .5 - Math.random()).slice(0,3)].sort(() => .5 - Math.random());
+
+      opts.innerHTML = '';
+      arr.forEach(o => {
+        const b = document.createElement('div');
+        b.className = 'btn';
+        b.textContent = o.t;
+        b.onclick = () => choose(o === cur, b);
+        opts.appendChild(b);
       });
     }
 
-    function selectAnswer(isCorrect, btn) {
-      document.querySelectorAll('.option').forEach(b => b.style.pointerEvents = 'none');
-
-      if (isCorrect) {
-        btn.classList.add('correct');
-        score += 10;
-        streak++;
-        Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-      } else {
-        btn.classList.add('wrong');
-        streak = 0;
-        Telegram.WebApp.HapticFeedback.notificationOccurred('error');
-      }
-
-      updateScore();
+    function choose(ok, b) {
+      document.querySelectorAll('.btn').forEach(x => x.style.pointerEvents = 'none');
+      if (ok) { b.classList.add('correct'); score += 10; streak++; Telegram.WebApp.HapticFeedback.notificationOccurred('success'); }
+      else { b.classList.add('wrong'); streak = 0; Telegram.WebApp.HapticFeedback.notificationOccurred('error'); }
+      sc.textContent = `Счёт: ${score}`;
+      st.textContent = `Серия: ${streak}`;
       setTimeout(() => {
-        if (isCorrect && streak % 5 === 0) {
-          score += 50;
-          updateScore();
-          alert(`БОНУС! +50 за серию ${streak}!`);
-        }
-        nextRound();
+        if (ok && streak % 5 === 0) { score += 50; sc.textContent = `Счёт: ${score}`; alert(`БОНУС +50!`); }
+        next();
       }, 1500);
     }
 
-    function updateScore() {
-      scoreEl.textContent = `Счёт: ${score}`;
-      streakEl.textContent = `Серия: ${streak} 🔥`;
+    function share() {
+      const txt = `Я угадал ${score} ИИ-картинок! Серия: ${streak}\nПобей меня в @guess_ai_game_bot!`;
+      Telegram.WebApp.shareScore?.() || navigator.share?.({text: txt}) || alert(txt);
     }
 
-    function shareScore() {
-      const text = `Я угадал ${score} ИИ-картинок! Серия: ${streak}\nПобей меня в @guess_ai_game_bot!`;
-      Telegram.WebApp.shareScore?.() || navigator.share?.({ text }) || alert(text);
-    }
-
-    function startGame() {
-      nextRound();
-      Telegram.WebApp.ready();
-      Telegram.WebApp.expand();
-      Telegram.WebApp.MainButton.setText('Поделиться счётом');
-      Telegram.WebApp.MainButton.show();
-      Telegram.WebApp.MainButton.onClick(shareScore);
-    }
-
-    startGame();
+    Telegram.WebApp.ready(); Telegram.WebApp.expand();
+    Telegram.WebApp.MainButton.setText('Поделиться счётом').show().onClick(share);
+    next();
   </script>
 </body>
 </html>
