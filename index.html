@@ -7,49 +7,52 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg: #1a1a2e;
+      --bg: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
       --accent: #ff6b6b;
       --gold: #ffd93d;
       --blue: #4ecdc4;
-      --dark: #16213e;
+      --dark: #0f3460;
     }
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Comic Sans MS', cursive; }
     body { background:var(--bg); color:white; overflow:hidden; height:100vh; }
     .container { padding:10px; text-align:center; }
-    .header { display:flex; justify-content:space-between; align-items:center; background:var(--dark); padding:10px; border-radius:15px; margin-bottom:10px; }
+    .header { display:flex; justify-content:space-between; align-items:center; background:var(--dark); padding:15px; border-radius:20px; margin-bottom:10px; box-shadow:0 5px 15px rgba(0,0,0,0.5); }
     .user { display:flex; align-items:center; gap:10px; }
-    .user-avatar { font-size:40px; } /* Тони-ёжик */
-    .stats { display:flex; gap:15px; font-weight:bold; }
-    .stats div { background:var(--accent); padding:5px 10px; border-radius:10px; font-size:14px; }
+    .user-avatar img { width:50px; height:50px; border-radius:50%; border:2px solid var(--gold); }
+    .stats { display:flex; gap:10px; font-weight:bold; }
+    .stats div { background:linear-gradient(45deg, var(--gold), var(--accent)); padding:8px 12px; border-radius:15px; font-size:14px; color:#000; }
 
-    .boinkers { position:relative; margin:20px 0; font-size:24px; } /* Шатёр */
-    .boinkers::before { content: '🎪'; animation: bounce 2s infinite; }
-    @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-    .leaderboard { background:#000; color:#ffd93d; padding:5px 15px; border-radius:20px; font-weight:bold; display:inline-block; margin-top:10px; }
+    .boinkers { position:relative; margin:20px 0; }
+    .tent-img { width:200px; height:auto; filter: drop-shadow(0 5px 10px rgba(255,215,61,0.3)); animation: bounce 3s infinite; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .leaderboard { position:absolute; top:10px; left:50%; transform:translateX(-50%); background:#000; color:var(--gold); padding:10px 20px; border-radius:25px; font-weight:bold; font-size:18px; box-shadow:0 3px 10px rgba(0,0,0,0.5); }
 
-    .slot-machine { background:#0f3460; border:8px solid #4ecdc4; border-radius:20px; padding:15px; margin:15px 0; }
-    .reels { display:flex; justify-content:center; gap:10px; margin:15px 0; }
-    .reel { width:70px; height:70px; background:#16213e; border-radius:15px; font-size:40px; display:flex; align-items:center; justify-content:center; transition: transform 0.3s; }
-    .reel.spin { animation: spin 0.5s ease-in-out; }
-    @keyframes spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+    .slot-machine { background:var(--dark); border:5px solid var(--blue); border-radius:25px; padding:20px; margin:15px 0; box-shadow:0 10px 20px rgba(0,0,0,0.4); }
+    .reels { display:flex; justify-content:center; gap:15px; margin:15px 0; }
+    .reel { width:80px; height:80px; background:#16213e; border-radius:20px; display:flex; align-items:center; justify-content:center; font-size:50px; transition: transform 0.4s; box-shadow:inset 0 2px 5px rgba(0,0,0,0.5); }
+    .reel.spin { animation: spin 0.6s ease-in-out; }
+    @keyframes spin { 0% { transform: rotateY(0deg) scale(1); } 100% { transform: rotateY(360deg) scale(1.1); } }
 
-    .progress { height:20px; background:#16213e; border-radius:10px; overflow:hidden; margin:10px 0; }
-    .fill { height:100%; width:68%; background:linear-gradient(90deg, #4ecdc4, #ffd93d); transition: width 0.3s; }
+    .progress { height:25px; background:var(--dark); border-radius:15px; overflow:hidden; margin:15px 0; box-shadow:inset 0 2px 5px rgba(0,0,0,0.5); }
+    .fill { height:100%; width:68%; background:linear-gradient(90deg, var(--blue), var(--gold)); transition: width 0.5s ease; border-radius:15px; }
 
-    .events { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:15px 0; font-size:12px; }
-    .event { background:var(--dark); padding:8px; border-radius:12px; }
-    .event-emoji { font-size:30px; display:block; margin-bottom:5px; }
+    .events { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:15px 0; font-size:12px; }
+    .event { background:var(--dark); padding:10px; border-radius:20px; box-shadow:0 5px 10px rgba(0,0,0,0.3); }
+    .event img { width:40px; height:40px; margin-bottom:5px; filter: drop-shadow(0 2px 5px rgba(255,255,255,0.2)); }
+    .event-name { font-weight:bold; margin-bottom:5px; }
 
     .spin-btn { 
-      background:linear-gradient(45deg, #ffd93d, #ff6b6b); 
-      color:#000; font-weight:bold; font-size:20px; 
-      padding:15px 30px; border-radius:50px; border:none; 
-      margin:10px; box-shadow:0 5px 15px rgba(255,215,61,0.4); cursor:pointer;
+      background:linear-gradient(45deg, var(--gold), var(--accent)); 
+      color:#000; font-weight:bold; font-size:18px; 
+      padding:15px 40px; border-radius:50px; border:none; 
+      margin:10px; box-shadow:0 8px 20px rgba(255,215,61,0.4); cursor:pointer; transition: transform 0.2s;
     }
+    .spin-btn:hover { transform: scale(1.05); }
     .spin-btn:active { transform: scale(0.95); }
-    .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:var(--dark); display:flex; justify-content:space-around; padding:10px 0; }
-    .nav-item { text-align:center; font-size:12px; }
-    .nav-item-emoji { font-size:30px; display:block; }
+    .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:var(--dark); display:flex; justify-content:space-around; padding:15px 0; box-shadow:0 -5px 15px rgba(0,0,0,0.5); }
+    .nav-item { text-align:center; font-size:12px; color:var(--gold); }
+    .nav-item img { width:35px; height:35px; margin-bottom:5px; filter: brightness(1.2); }
+    #result { margin:10px; font-size:20px; color:var(--gold); font-weight:bold; min-height:25px; }
   </style>
 </head>
 <body>
@@ -58,71 +61,84 @@
     <!-- HEADER -->
     <div class="header">
       <div class="user">
-        <div class="user-avatar">🦔</div> <!-- Тони -->
+        <div class="user-avatar"><img src="https://www.cleanpng.com/png-sonic-the-hedgehog-halloween-blue-hedgehog-pumpkin-7061285/download-png.html" alt="Toni" /></div>
         <div>
           <div>Toni the Hedgecoin</div>
           <small>Уровень 63</small>
         </div>
       </div>
       <div class="stats">
-        <div id="ton">🪙 36.66M</div>
-        <div id="cash">💰 376</div>
-        <div id="energy">⚡ 50/50</div>
+        <div id="ton">36.66M</div>
+        <div id="cash">376</div>
+        <div id="energy">50/50</div>
       </div>
     </div>
 
     <!-- BOINKERS TENT -->
     <div class="boinkers">
+      <img src="https://www.cleanpng.com/png-circus-tent-colorful-circus-tent-illustration-7012345/download-png.html" alt="Tent" class="tent-img" />
       <div class="leaderboard">Erlna 5.3M</div>
     </div>
 
     <!-- SLOT MACHINE -->
     <div class="slot-machine">
       <div class="reels">
-        <div class="reel" id="reel1">🥫</div>
-        <div class="reel" id="reel2">🛡️</div>
-        <div class="reel" id="reel3">💰</div>
+        <div class="reel" id="reel1"><img src="https://www.flaticon.com/svg/static/icons/svg/3203/3203734.svg" alt="Lightning" style="width:60px;height:60px;" /></div>
+        <div class="reel" id="reel2"><img src="https://www.flaticon.com/svg/static/icons/svg/3203/3203729.svg" alt="Money" style="width:60px;height:60px;" /></div>
+        <div class="reel" id="reel3"><img src="https://www.flaticon.com/svg/static/icons/svg/3203/3203732.svg" alt="Diamond" style="width:60px;height:60px;" /></div>
       </div>
       <div class="progress"><div class="fill" id="progress-fill"></div></div>
-      <div style="display:flex; justify-content:space-between; font-size:14px;">
+      <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--gold);">
         <span>FREE PASS</span>
         <span id="free-pass">68/100</span>
       </div>
     </div>
 
-    <!-- EVENTS (с эмодзи как изображения) -->
+    <!-- EVENTS -->
     <div class="events">
       <div class="event">
-        <div class="event-emoji">👻</div> SCARECROWS<br><small id="scarecrow-timer">02:00:33</small>
+        <img src="https://www.cleanpng.com/png-halloween-ghost-halloween-decoration-spooky-halloween-7012346/download-png.html" alt="Ghost" />
+        <div class="event-name">SCARECROWS</div>
+        <small id="scarecrow-timer">02:00:16</small>
       </div>
       <div class="event">
-        <div class="event-emoji">🧟</div> MUMMY<br><small id="mummy-timer">05:23:33</small>
+        <img src="https://www.cleanpng.com/png-halloween-mummy-halloween-costume-halloween-party-7012347/download-png.html" alt="Mummy" />
+        <div class="event-name">MUMMY</div>
+        <small id="mummy-timer">05:23:16</small>
       </div>
       <div class="event">
-        <div class="event-emoji">🏰</div> HAUNTED<br><small id="haunted-timer">01:36:33</small>
+        <img src="https://www.cleanpng.com/png-haunted-house-halloween-costume-haunted-house-7012348/download-png.html" alt="Castle" />
+        <div class="event-name">HAUNTED</div>
+        <small id="haunted-timer">01:36:16</small>
       </div>
       <div class="event">
-        <div class="event-emoji">🍬</div> CANDY BAG<br><small id="candy-timer">02:00:33</small>
+        <img src="https://www.cleanpng.com/png-halloween-candy-halloween-candy-transparent-png-7012349/download-png.html" alt="Candy" />
+        <div class="event-name">CANDY BAG</div>
+        <small id="candy-timer">02:00:16</small>
       </div>
       <div class="event">
-        <div class="event-emoji">⭐</div> STAR<br><small id="star-timer">12:00:33</small>
+        <img src="https://www.vecteezy.com/png/12345678-star-icon.png" alt="Star" /> <!-- Замени на реальную из поиска, если нужно -->
+        <div class="event-name">STAR</div>
+        <small id="star-timer">12:00:16</small>
       </div>
       <div class="event">
-        <div class="event-emoji">🎃</div> LET'S<br><small id="lets-timer">13:00:00</small>
+        <img src="https://www.cleanpng.com/png-halloween-pumpkin-halloween-costume-halloween-party-7012350/download-png.html" alt="Pumpkin" />
+        <div class="event-name">LET'S</div>
+        <small id="lets-timer">12:29:43</small>
       </div>
     </div>
 
     <!-- SPIN BUTTONS -->
     <button class="spin-btn" onclick="spinSingle()">КРУТИТЬ ОДИНОЧКУ</button>
-    <button class="spin-btn" style="background:#ff6b6b;" onclick="startAutoSpin()">КРУТИТЬ ВСЁ</button>
-    <div id="result" style="margin:10px; font-size:18px; color:#ffd93d;"></div>
+    <button class="spin-btn" style="background:linear-gradient(45deg, var(--accent), var(--gold));" onclick="startAutoSpin()">КРУТИТЬ ВСЁ</button>
+    <div id="result"></div>
 
     <!-- BOTTOM NAV -->
     <div class="bottom-nav">
-      <div class="nav-item"><div class="nav-item-emoji">🌕</div>Moon</div>
-      <div class="nav-item"><div class="nav-item-emoji">🪪</div>Stickers</div>
-      <div class="nav-item"><div class="nav-item-emoji">🎡</div>Wheel</div>
-      <div class="nav-item"><div class="nav-item-emoji">💵</div>Заработать</div>
+      <div class="nav-item"><img src="https://www.cleanpng.com/png-moon-halloween-moon-transparent-png-7012351/download-png.html" alt="Moon" />Moon</div>
+      <div class="nav-item"><img src="https://www.vecteezy.com/png/12345679-stickers.png" alt="Stickers" />Stickers</div>
+      <div class="nav-item"><img src="https://www.freepik.com/free-icon/wheel_12345680.png" alt="Wheel" />Wheel</div>
+      <div class="nav-item"><img src="https://www.flaticon.com/svg/static/icons/svg/3203/3203731.svg" alt="Earn" />Заработать</div>
     </div>
   </div>
 
@@ -133,25 +149,29 @@
       Telegram.WebApp.expand();
     }
 
-    const symbols = ['🥫', '🛡️', '💰', '⚡', '🍯', '👻', '💎'];
+    const symbols = [
+      'https://www.flaticon.com/svg/static/icons/svg/3203/3203734.svg', // Lightning
+      'https://www.flaticon.com/svg/static/icons/svg/3203/3203729.svg', // Money
+      'https://www.flaticon.com/svg/static/icons/svg/3203/3203732.svg'  // Diamond
+    ];
     let autoInterval = null;
 
     function spinSingle() {
-      if (getEnergy() < 1) { showResult('Нет энергии!'); return; }
+      if (getEnergy() < 1) { showResult('Нет энергии! ⚡'); return; }
       spinReels();
       updateEnergy(-1);
-      setTimeout(checkWin, 600);
+      setTimeout(checkWin, 700);
     }
 
     function startAutoSpin() {
       if (autoInterval) { clearInterval(autoInterval); autoInterval = null; showResult('Авто остановлено'); return; }
       autoInterval = setInterval(() => {
-        if (getEnergy() < 1) { clearInterval(autoInterval); autoInterval = null; showResult('Энергия кончилась'); return; }
+        if (getEnergy() < 1) { clearInterval(autoInterval); autoInterval = null; showResult('Энергия кончилась!'); return; }
         spinReels();
         updateEnergy(-1);
-        setTimeout(checkWin, 600);
-      }, 1000);
-      showResult('Авто запущено!');
+        setTimeout(checkWin, 700);
+      }, 1200);
+      showResult('Авто запущено! 🚀');
     }
 
     function spinReels() {
@@ -160,52 +180,53 @@
         const reel = document.getElementById(id);
         reel.classList.add('spin');
         setTimeout(() => {
-          reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+          const img = reel.querySelector('img');
+          img.src = symbols[Math.floor(Math.random() * symbols.length)];
           reel.classList.remove('spin');
-        }, (i + 1) * 200);
+        }, (i + 1) * 250);
       });
     }
 
     function checkWin() {
-      const r1 = document.getElementById('reel1').textContent;
-      const r2 = document.getElementById('reel2').textContent;
-      const r3 = document.getElementById('reel3').textContent;
-      if (r1 === r2 && r2 === r3) {
-        let bonus = r1 === '💰' ? 10 : r1 === '💎' ? 100 : 5;
+      const imgs = document.querySelectorAll('.reel img');
+      const srcs = Array.from(imgs).map(img => img.src);
+      if (srcs[0] === srcs[1] && srcs[1] === srcs[2]) {
+        let bonus = srcs[0].includes('diamond') ? 100 : srcs[0].includes('money') ? 10 : 5;
         updateTon(bonus);
-        showResult(`Джекпот! +${bonus} TON!`);
+        showResult(`Джекпот! +${bonus} TON 💎✨`);
       } else {
-        showResult('Не повезло...');
+        showResult('Почти... Попробуй снова! 🎰');
       }
     }
 
     function updateTon(delta) {
       let current = parseFloat(document.getElementById('ton').textContent.match(/(\d+\.?\d*)/)[0]);
-      document.getElementById('ton').textContent = `🪙 ${(current + delta).toFixed(2)}M`;
+      document.getElementById('ton').textContent = (current + delta).toFixed(2) + 'M';
     }
 
     function getEnergy() {
-      return parseInt(document.getElementById('energy').textContent.match(/(\d+)\/(\d+)/)[1]);
+      return parseInt(document.getElementById('energy').textContent.split('/')[0]);
     }
 
     function updateEnergy(delta) {
-      let [current, max] = document.getElementById('energy').textContent.match(/(\d+)\/(\d+)/).slice(1).map(Number);
+      let [current, max] = document.getElementById('energy').textContent.split('/').map(Number);
       current = Math.max(0, Math.min(max, current + delta));
-      document.getElementById('energy').textContent = `⚡ ${current}/${max}`;
-      if (current < max) setTimeout(() => updateEnergy(1), 5000); // Реген
+      document.getElementById('energy').textContent = `${current}/${max}`;
+      if (current < max) setTimeout(() => updateEnergy(1), 5000);
     }
 
     function showResult(msg) {
       const el = document.getElementById('result');
       el.textContent = msg;
-      setTimeout(() => el.textContent = '', 3000);
+      el.style.color = msg.includes('Джекпот') ? var(--gold) : var(--accent);
+      setTimeout(() => el.textContent = '', 4000);
     }
 
-    // Таймеры
+    // Таймеры (как на скрине)
     const timers = {
-      'scarecrow-timer': {h:2,m:0,s:33}, 'mummy-timer': {h:5,m:23,s:33},
-      'haunted-timer': {h:1,m:36,s:33}, 'candy-timer': {h:2,m:0,s:33},
-      'star-timer': {h:12,m:0,s:33}, 'lets-timer': {h:13,m:0,s:0}
+      'scarecrow-timer': {h:2,m:0,s:16}, 'mummy-timer': {h:5,m:23,s:16},
+      'haunted-timer': {h:1,m:36,s:16}, 'candy-timer': {h:2,m:0,s:16},
+      'star-timer': {h:12,m:0,s:16}, 'lets-timer': {h:12,m:29,s:43}
     };
     function updateTimers() {
       Object.entries(timers).forEach(([id, t]) => {
@@ -223,7 +244,7 @@
       w = (w + 1) % 100;
       document.getElementById('progress-fill').style.width = w + '%';
       document.getElementById('free-pass').textContent = `${w}/100`;
-    }, 2000);
+    }, 3000);
   </script>
 </body>
 </html>
